@@ -31,14 +31,7 @@
       border-radius: 8px;
       padding: 15px;
     }
-    /* 修改標題樣式，內含隨機結果 */
-    h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 20px;
-      font-size: 28px;
-    }
-    h2 {
+    h1, h2 {
       text-align: center;
       color: #333;
       margin-bottom: 20px;
@@ -83,6 +76,21 @@
     }
     .random-button:hover {
       background-color: #1976D2;
+    }
+    .result {
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      padding: 20px;
+      color: #333;
+      min-height: 40px;
+      background-color: #f8f8f8;
+      border-radius: 8px;
+    }
+    #resultText {
+      transition: opacity 0.5s;
+      opacity: 1;
     }
     .meal-management {
       background-color: #f8f8f8;
@@ -180,7 +188,6 @@
       display: flex;
       gap: 5px;
     }
-
     /* 手機版處理 */
     @media (max-width: 768px) {
       .container {
@@ -201,11 +208,10 @@
       .meal-input input[type="text"] {
         font-size: 18px;
       }
-      h1 {
+      .result {
         font-size: 24px;
       }
     }
-
     /* 側邊備用按鈕（書籤效果） */
     #sideBackupBtn {
       position: fixed;
@@ -234,15 +240,21 @@
   <div class="container" id="appContainer">
     <!-- 左側主功能區（主清單） -->
     <div class="main-area" id="mainArea">
-      <!-- 修改標題：在[今晚想吃 : ]後顯示隨機結果 -->
-      <h1>[今晚想吃 : ]<span id="resultText"></span></h1>
-
+      <h1>晚餐吃什麼?</h1>
+      
+      <!-- 原本的備用菜餚按鈕已移除 -->
+      
       <div class="meal-input">
         <input type="text" id="newMeal" placeholder="輸入新菜餚">
         <button id="addBtn" onclick="onAddBtnClick()">新增</button>
       </div>
 
       <button class="random-button" onclick="pickRandom()">抽!</button>
+
+      <!-- 提示訊息區 -->
+      <div class="result" id="result">
+        <span id="resultText"></span>
+      </div>
 
       <div class="meal-management">
         <h2>菜餚</h2>
@@ -285,9 +297,11 @@
       checkInput();
     }
 
+    // (A) 顯示備用菜餚，隱藏主清單
     function showBackup() {
       document.getElementById('appContainer').classList.add('show-backup');
     }
+    // (B) 顯示主清單，隱藏備用菜餚
     function showMain() {
       document.getElementById('appContainer').classList.remove('show-backup');
     }
@@ -479,23 +493,35 @@
       }, { once: true });
     }
 
+    // 修改抽取結果為跳出新視窗，內容顯示「今晚吃 : 抽取結果!」
     function pickRandom() {
       if (meals.length === 0) {
         displayResult('請先新增一些菜餚！', false);
         return;
       }
       const randomIndex = Math.floor(Math.random() * meals.length);
-      displayResult(meals[randomIndex], false);
+      const selectedMeal = meals[randomIndex];
+      
+      // 設定新視窗尺寸與位置
+      const width = 300;
+      const height = 200;
+      const left = (screen.width - width) / 2;
+      const top = (screen.height - height) / 2;
+      const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
+
+      // 開啟新視窗並寫入內容
+      const newWindow = window.open("", "_blank", windowFeatures);
+      newWindow.document.write(`<h1 style="text-align:center;margin-top:50px;">今晚吃 : ${selectedMeal}!</h1>`);
+      newWindow.document.close();
     }
 
-    // 修改 displayResult 只更新 <span id="resultText">
     function displayResult(message, fade) {
       const resultText = document.getElementById('resultText');
       resultText.textContent = message;
-      // 若需要淡出效果，可保留以下邏輯（這裡僅示範 2 秒後淡出）
+      resultText.style.opacity = 1;
       if (fade) {
         setTimeout(() => {
-          resultText.textContent = '';
+          resultText.style.opacity = 0;
         }, 2000);
       }
     }
