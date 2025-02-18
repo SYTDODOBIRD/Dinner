@@ -326,6 +326,10 @@
     .mobile-menu .delete-btn {
       background-color: #f44336;
     }
+    /* 新增的「取消」按鈕，可以給個中性顏色 */
+    .mobile-menu .cancel-btn {
+      background-color: #666;
+    }
   </style>
 </head>
 <body>
@@ -344,8 +348,6 @@
 
       <button class="random-button" onclick="pickRandom()">抽!</button>
 
-      <!-- 已刪除 result 區塊 (若原本有) -->
-      
       <div class="meal-management">
         <h2>菜餚</h2>
         <div class="meal-list" id="mealList">
@@ -379,6 +381,8 @@
     <h3 id="mobileMenuTitle"></h3>
     <button class="move-btn" onclick="onMobileMove()">移動</button>
     <button class="delete-btn" onclick="onMobileDelete()">刪除</button>
+    <!-- 新增的「取消」按鈕 -->
+    <button class="cancel-btn" onclick="closeMobileMenu()">取消</button>
   </div>
 
   <script>
@@ -560,6 +564,7 @@
       closeMobileMenu();
     }
 
+    // 新增：行動版選單 - 取消
     function closeMobileMenu() {
       document.getElementById('mobileMenu').style.display = 'none';
       currentClickedMealName = null;
