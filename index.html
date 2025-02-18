@@ -31,7 +31,14 @@
       border-radius: 8px;
       padding: 15px;
     }
-    h1, h2 {
+    /* 修改標題樣式，內含隨機結果 */
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+    h2 {
       text-align: center;
       color: #333;
       margin-bottom: 20px;
@@ -76,21 +83,6 @@
     }
     .random-button:hover {
       background-color: #1976D2;
-    }
-    .result {
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 20px;
-      padding: 20px;
-      color: #333;
-      min-height: 40px;
-      background-color: #f8f8f8;
-      border-radius: 8px;
-    }
-    #resultText {
-      transition: opacity 0.5s;
-      opacity: 1;
     }
     .meal-management {
       background-color: #f8f8f8;
@@ -209,7 +201,7 @@
       .meal-input input[type="text"] {
         font-size: 18px;
       }
-      .result {
+      h1 {
         font-size: 24px;
       }
     }
@@ -242,20 +234,15 @@
   <div class="container" id="appContainer">
     <!-- 左側主功能區（主清單） -->
     <div class="main-area" id="mainArea">
-      <h1>晚餐吃什麼?</h1>
-      <!-- 原本的備用菜餚按鈕已移除 -->
-      
+      <!-- 修改標題：在[今晚想吃 : ]後顯示隨機結果 -->
+      <h1>[今晚想吃 : ]<span id="resultText"></span></h1>
+
       <div class="meal-input">
         <input type="text" id="newMeal" placeholder="輸入新菜餚">
         <button id="addBtn" onclick="onAddBtnClick()">新增</button>
       </div>
 
       <button class="random-button" onclick="pickRandom()">抽!</button>
-
-      <!-- 提示訊息區 -->
-      <div class="result" id="result">
-        <span id="resultText"></span>
-      </div>
 
       <div class="meal-management">
         <h2>菜餚</h2>
@@ -501,13 +488,14 @@
       displayResult(meals[randomIndex], false);
     }
 
+    // 修改 displayResult 只更新 <span id="resultText">
     function displayResult(message, fade) {
       const resultText = document.getElementById('resultText');
       resultText.textContent = message;
-      resultText.style.opacity = 1;
+      // 若需要淡出效果，可保留以下邏輯（這裡僅示範 2 秒後淡出）
       if (fade) {
         setTimeout(() => {
-          resultText.style.opacity = 0;
+          resultText.textContent = '';
         }, 2000);
       }
     }
