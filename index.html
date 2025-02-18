@@ -20,6 +20,8 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       display: flex;
       gap: 20px;
+      /* 預設：電腦版（桌面版）顯示兩欄 */
+      flex-direction: row;
     }
     /* 左側主區域 */
     .main-area {
@@ -50,9 +52,7 @@
       font-size: 16px;
     }
 
-    /* ------------------------
-       按鈕樣式
-       ------------------------ */
+    /* 按鈕樣式 */
     button {
       padding: 8px 16px;
       border: none;
@@ -60,21 +60,18 @@
       cursor: pointer;
       font-size: 16px;
       transition: background-color 0.3s;
-      color: white; /* 預設文字為白色 */
+      color: white;
     }
-    /* 新增按鈕：正常狀態(綠色) */
     #addBtn {
       background-color: #4CAF50;
     }
     #addBtn:hover {
       background-color: #45a049;
     }
-    /* (1) 不可用時改用自訂類別 .disabled-btn，背景灰色，字體保持白色 */
     .disabled-btn {
       background-color: #aaa !important; 
       color: #fff !important; 
     }
-    /* 「抽!」按鈕 */
     .random-button {
       width: 100%;
       margin-bottom: 20px;
@@ -86,9 +83,7 @@
       background-color: #1976D2;
     }
 
-    /* ------------------------
-       結果與區塊樣式
-       ------------------------ */
+    /* 結果與區塊樣式 */
     .result {
       text-align: center;
       font-size: 28px;
@@ -128,9 +123,7 @@
       border-radius: 4px;
     }
 
-    /* ------------------------
-       動畫 Keyframes
-       ------------------------ */
+    /* 動畫 Keyframes */
     @keyframes slideIn {
       from {
         transform: translateX(-100%);
@@ -165,26 +158,22 @@
         transform: scale(0.7) translateY(-40px) rotate(30deg);
       }
     }
-
     .slide-in {
       animation: slideIn 0.5s forwards;
     }
     .slide-out {
       animation: slideOut 0.5s forwards;
     }
-    /* 灰飛煙滅動畫 */
     .ash-out {
       animation: ashOut 0.8s forwards ease-in;
     }
-
     /* 移動按鈕改為橘色 */
     .move-btn {
-      background-color: #FF9800; /* 橘色 */
+      background-color: #FF9800;
     }
     .move-btn:hover {
       background-color: #FB8C00;
     }
-
     /* 刪除按鈕為紅色 */
     .delete-btn {
       background-color: #f44336;
@@ -193,9 +182,7 @@
       background-color: #da190b;
     }
 
-    /* ------------------------
-       備用菜餚列表
-       ------------------------ */
+    /* 備用菜餚列表 */
     .backup-list {
       display: flex;
       flex-direction: column;
@@ -214,6 +201,37 @@
       display: flex;
       gap: 5px;
     }
+
+    /* ================================
+       (重點) 使用 Media Query 進行響應式
+       當螢幕寬度 <= 768px (手機板) 時
+       ================================ */
+    @media (max-width: 768px) {
+      .container {
+        /* 從兩欄改成上下堆疊 */
+        flex-direction: column;
+      }
+      .random-button {
+        /* 手機版可以讓按鈕更寬 */
+        font-size: 20px;
+      }
+      .meal-input input[type="text"] {
+        /* 手機版輸入框可再大一點 */
+        font-size: 18px;
+      }
+      .result {
+        /* 手機版結果區字體可以稍微小一點或保持 */
+        font-size: 24px;
+      }
+      .meal-management {
+        /* 手機上可能希望內距更多或更少，可自行調整 */
+        padding: 10px;
+      }
+      .backup-area {
+        /* 手機上可加大 padding 或調整 */
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -223,7 +241,6 @@
       <h1>晚餐吃什麼?</h1>
 
       <div class="meal-input">
-        <!-- (2) 移除 disabled，改用自訂機制控制 -->
         <input type="text" id="newMeal" placeholder="輸入新菜餚">
         <button id="addBtn" onclick="onAddBtnClick()">新增</button>
       </div>
@@ -263,21 +280,16 @@
       '炸雞',
       '咖哩飯'
     ];
-
     // 備用菜餚
     let movedMeals = [];
 
-    // 頁面載入時執行
     window.onload = function() {
       loadMeals();
       updateMealList();
       updateBackupList();
-      checkInput(); // 檢查輸入框，控制按鈕狀態
+      checkInput();
     }
 
-    /**
-     * 讀取 localStorage
-     */
     function loadMeals() {
       const storedMeals = localStorage.getItem('meals');
       if (storedMeals) {
@@ -289,65 +301,42 @@
       }
     }
 
-    /**
-     * 儲存至 localStorage
-     */
     function saveMeals() {
       localStorage.setItem('meals', JSON.stringify(meals));
       localStorage.setItem('movedMeals', JSON.stringify(movedMeals));
     }
 
-    /**
-     * 當按下「新增」按鈕時
-     * 若輸入框是空白，顯示提示；否則呼叫 addMeal()
-     */
     function onAddBtnClick() {
       const input = document.getElementById('newMeal');
       const meal = input.value.trim();
       if (!meal) {
-        // (2) 如果是空白，顯示提示
         alert('請先填家新菜餚');
         return;
       }
-      // 如果不空白，正常新增
       addMeal(meal);
     }
 
-    /**
-     * 真正執行新增菜餚到主清單
-     */
     function addMeal(meal) {
-      // 檢查是否已存在於主清單
       if (meals.includes(meal)) {
         displayResult(`菜餚「${meal}」已存在！`, true);
         return;
       }
-      // 檢查是否已存在於備用菜餚
       if (movedMeals.includes(meal)) {
         displayResult(`菜餚「${meal}」已在備用菜餚！`, true);
         return;
       }
-
       meals.push(meal);
       saveMeals();
-
-      // 清空輸入框並更新清單
       const input = document.getElementById('newMeal');
       input.value = '';
-      updateMealList(meal); // 讓新菜餚有滑入動畫
+      updateMealList(meal);
       displayResult(`成功新增「${meal}」！`, true);
-
-      // 再次檢查輸入框，更新按鈕狀態
       checkInput();
     }
 
-    /**
-     * 檢查輸入框是否有值，控制「新增」按鈕的外觀
-     */
     function checkInput() {
       const input = document.getElementById('newMeal');
       const addBtn = document.getElementById('addBtn');
-      // 如果輸入框為空，就加上灰色類別；否則移除
       if (input.value.trim() === '') {
         addBtn.classList.add('disabled-btn');
       } else {
@@ -355,10 +344,6 @@
       }
     }
 
-    /**
-     * 更新主菜餚清單
-     * @param {string|null} newMeal - 新加入的菜餚名稱（若為 null 則不執行滑入動畫）。
-     */
     function updateMealList(newMeal = null) {
       const list = document.getElementById('mealList');
       list.innerHTML = '';
@@ -368,7 +353,6 @@
       const rightColumn = document.createElement('div');
       rightColumn.className = 'meal-column';
 
-      // 依照字數由少到多排序
       const sortedMeals = meals.slice().sort((a, b) => a.length - b.length);
 
       sortedMeals.forEach((meal, sortedIndex) => {
@@ -377,17 +361,14 @@
         mealItem.className = 'meal-list-item';
         mealItem.setAttribute('data-meal', meal);
 
-        // 若為最新加入的菜餚，套用滑入動畫
         if (newMeal && meal === newMeal) {
           mealItem.classList.add('slide-in');
         }
 
-        // 菜餚名稱
         const mealNameSpan = document.createElement('span');
         mealNameSpan.textContent = meal;
         mealItem.appendChild(mealNameSpan);
 
-        // 「移動」按鈕（橘色）
         const moveBtn = document.createElement('button');
         moveBtn.className = 'move-btn';
         moveBtn.textContent = '移動';
@@ -396,7 +377,6 @@
         };
         mealItem.appendChild(moveBtn);
 
-        // 交錯放入左右欄
         if (sortedIndex % 2 === 0) {
           leftColumn.appendChild(mealItem);
         } else {
@@ -408,10 +388,6 @@
       list.appendChild(rightColumn);
     }
 
-    /**
-     * 更新備用菜餚清單
-     * @param {string|null} newMeal - 剛移到備用菜餚的名稱（若為 null 則不執行滑入動畫）。
-     */
     function updateBackupList(newMeal = null) {
       const backupList = document.getElementById('backupList');
       backupList.innerHTML = '';
@@ -420,21 +396,17 @@
         const backupItem = document.createElement('div');
         backupItem.className = 'backup-item';
 
-        // 若是剛移入的菜餚，套用滑入動畫
         if (newMeal && meal === newMeal) {
           backupItem.classList.add('slide-in');
         }
 
-        // 菜餚名稱
         const mealNameSpan = document.createElement('span');
         mealNameSpan.textContent = meal;
         backupItem.appendChild(mealNameSpan);
 
-        // 按鈕區域
         const btnArea = document.createElement('div');
         btnArea.className = 'backup-btn-area';
 
-        // 「移動」(橘色) - 移回主清單
         const moveBackBtn = document.createElement('button');
         moveBackBtn.className = 'move-btn';
         moveBackBtn.textContent = '移動';
@@ -443,7 +415,6 @@
         };
         btnArea.appendChild(moveBackBtn);
 
-        // 「刪除」(紅色) - 灰飛煙滅
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.textContent = '刪除';
@@ -460,72 +431,47 @@
       });
     }
 
-    /**
-     * 從主清單移動到備用菜餚 (滑出動畫)
-     */
     function moveMeal(btnElement) {
       const mealItem = btnElement.parentElement;
       const mealName = mealItem.getAttribute('data-meal');
-
-      // 先移除滑入動畫
       mealItem.classList.remove('slide-in');
-      // 強制 reflow
       void mealItem.offsetWidth;
-      // 加上滑出動畫
       mealItem.classList.add('slide-out');
 
       mealItem.addEventListener('animationend', function() {
-        // 從主清單移除
         const index = meals.indexOf(mealName);
         if (index !== -1) {
           meals.splice(index, 1);
         }
-        // 加入備用菜餚
         movedMeals.push(mealName);
         saveMeals();
-
         updateMealList();
-        updateBackupList(mealName); // 對剛移過去的菜餚套用滑入
+        updateBackupList(mealName);
         displayResult(`已將「${mealName}」移至備用菜餚`, true);
       }, { once: true });
     }
 
-    /**
-     * 從備用菜餚移回主清單 (滑出動畫)
-     */
     function moveMealBack(mealName, backupItem) {
-      // 先移除滑入動畫
       backupItem.classList.remove('slide-in');
-      // 強制 reflow
       void backupItem.offsetWidth;
-      // 加上滑出動畫
       backupItem.classList.add('slide-out');
 
       backupItem.addEventListener('animationend', function() {
-        // 從 movedMeals 移除
         const index = movedMeals.indexOf(mealName);
         if (index !== -1) {
           movedMeals.splice(index, 1);
         }
-        // 加回主清單
         meals.push(mealName);
         saveMeals();
-
-        updateMealList(mealName); // 對剛移回的菜餚套用滑入
+        updateMealList(mealName);
         updateBackupList();
         displayResult(`已將「${mealName}」移回主清單`, true);
       }, { once: true });
     }
 
-    /**
-     * 從備用菜餚刪除 (灰飛煙滅)
-     */
     function deleteFromBackup(mealName, backupItem) {
-      // 先移除滑入動畫
       backupItem.classList.remove('slide-in');
-      // 強制 reflow
       void backupItem.offsetWidth;
-      // 加上灰飛煙滅動畫
       backupItem.classList.add('ash-out');
 
       backupItem.addEventListener('animationend', function() {
@@ -539,9 +485,6 @@
       }, { once: true });
     }
 
-    /**
-     * 抽取菜餚
-     */
     function pickRandom() {
       if (meals.length === 0) {
         displayResult('請先新增一些菜餚！', false);
@@ -551,17 +494,10 @@
       displayResult(meals[randomIndex], false);
     }
 
-    /**
-     * 顯示提示訊息
-     * @param {string} message 訊息
-     * @param {boolean} fade 是否在一段時間後淡出
-     */
     function displayResult(message, fade) {
       const resultText = document.getElementById('resultText');
       resultText.textContent = message;
       resultText.style.opacity = 1;
-
-      // 淡出時間 2 秒
       if (fade) {
         setTimeout(() => {
           resultText.style.opacity = 0;
@@ -569,10 +505,7 @@
       }
     }
 
-    // 當輸入框內容改變時，動態更新按鈕外觀
     document.getElementById('newMeal').addEventListener('input', checkInput);
-
-    // 若使用者按下 Enter 鍵，也嘗試新增
     document.getElementById('newMeal').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         onAddBtnClick();
