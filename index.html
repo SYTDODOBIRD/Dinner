@@ -20,14 +20,14 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       display: flex;
       gap: 20px;
-      /* 預設：電腦版（桌面版）顯示兩欄 */
-      flex-direction: row;
     }
-    /* 左側主區域 */
+    /* 
+      預設：桌面版（大螢幕）時顯示兩欄 
+      小螢幕時改用媒體查詢處理
+    */
     .main-area {
       flex: 2;
     }
-    /* 右側備用菜餚 */
     .backup-area {
       flex: 1;
       background-color: #f8f8f8;
@@ -51,8 +51,6 @@
       border-radius: 4px;
       font-size: 16px;
     }
-
-    /* 按鈕樣式 */
     button {
       padding: 8px 16px;
       border: none;
@@ -82,8 +80,6 @@
     .random-button:hover {
       background-color: #1976D2;
     }
-
-    /* 結果與區塊樣式 */
     .result {
       text-align: center;
       font-size: 28px;
@@ -122,8 +118,6 @@
       background-color: white;
       border-radius: 4px;
     }
-
-    /* 動畫 Keyframes */
     @keyframes slideIn {
       from {
         transform: translateX(-100%);
@@ -167,22 +161,18 @@
     .ash-out {
       animation: ashOut 0.8s forwards ease-in;
     }
-    /* 移動按鈕改為橘色 */
     .move-btn {
       background-color: #FF9800;
     }
     .move-btn:hover {
       background-color: #FB8C00;
     }
-    /* 刪除按鈕為紅色 */
     .delete-btn {
       background-color: #f44336;
     }
     .delete-btn:hover {
       background-color: #da190b;
     }
-
-    /* 備用菜餚列表 */
     .backup-list {
       display: flex;
       flex-direction: column;
@@ -202,43 +192,46 @@
       gap: 5px;
     }
 
-    /* ================================
-       (重點) 使用 Media Query 進行響應式
-       當螢幕寬度 <= 768px (手機板) 時
-       ================================ */
+    /* ================
+       手機版處理
+       ================ */
     @media (max-width: 768px) {
       .container {
-        /* 從兩欄改成上下堆疊 */
+        /* 手機版預設只顯示 main-area，將備用菜餚隱藏 */
         flex-direction: column;
       }
+      /* 預設隱藏備用菜餚區域 */
+      .backup-area {
+        display: none;
+      }
+      /* 當有 .show-backup 這個類別時，顯示備用菜餚、隱藏 main-area */
+      .show-backup .main-area {
+        display: none;
+      }
+      .show-backup .backup-area {
+        display: block;
+      }
+      /* 可以稍微調整字體、內距等 */
       .random-button {
-        /* 手機版可以讓按鈕更寬 */
         font-size: 20px;
       }
       .meal-input input[type="text"] {
-        /* 手機版輸入框可再大一點 */
         font-size: 18px;
       }
       .result {
-        /* 手機版結果區字體可以稍微小一點或保持 */
         font-size: 24px;
-      }
-      .meal-management {
-        /* 手機上可能希望內距更多或更少，可自行調整 */
-        padding: 10px;
-      }
-      .backup-area {
-        /* 手機上可加大 padding 或調整 */
-        padding: 10px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- 左側主功能區 -->
-    <div class="main-area">
+  <div class="container" id="appContainer">
+    <!-- 左側主功能區（主清單） -->
+    <div class="main-area" id="mainArea">
       <h1>晚餐吃什麼?</h1>
+
+      <!-- (A) 給手機版用的按鈕：前往備用菜餚 -->
+      <button style="margin-bottom: 10px; background: #666;" onclick="showBackup()">備用菜餚</button>
 
       <div class="meal-input">
         <input type="text" id="newMeal" placeholder="輸入新菜餚">
@@ -260,8 +253,13 @@
       </div>
     </div>
 
-    <div class="backup-area">
+    <!-- 右側備用菜餚區 -->
+    <div class="backup-area" id="backupArea">
       <h2>備用菜餚</h2>
+
+      <!-- (B) 給手機版用的按鈕：返回主清單 -->
+      <button style="margin-bottom: 10px; background: #666;" onclick="showMain()">返回</button>
+
       <div id="backupList" class="backup-list">
         <!-- 移動過來的菜餚將顯示在此，並可再操作 -->
       </div>
@@ -269,7 +267,7 @@
   </div>
 
   <script>
-    // 預設菜餚（主清單）
+    // 主清單菜餚
     let meals = [
       '牛肉麵',
       '滷味',
@@ -290,6 +288,16 @@
       checkInput();
     }
 
+    // (A) 顯示備用菜餚，隱藏主清單
+    function showBackup() {
+      // 讓最外層容器加上 .show-backup
+      document.getElementById('appContainer').classList.add('show-backup');
+    }
+    // (B) 顯示主清單，隱藏備用菜餚
+    function showMain() {
+      document.getElementById('appContainer').classList.remove('show-backup');
+    }
+
     function loadMeals() {
       const storedMeals = localStorage.getItem('meals');
       if (storedMeals) {
@@ -300,7 +308,6 @@
         movedMeals = JSON.parse(storedMovedMeals);
       }
     }
-
     function saveMeals() {
       localStorage.setItem('meals', JSON.stringify(meals));
       localStorage.setItem('movedMeals', JSON.stringify(movedMeals));
@@ -315,7 +322,6 @@
       }
       addMeal(meal);
     }
-
     function addMeal(meal) {
       if (meals.includes(meal)) {
         displayResult(`菜餚「${meal}」已存在！`, true);
@@ -327,13 +333,11 @@
       }
       meals.push(meal);
       saveMeals();
-      const input = document.getElementById('newMeal');
-      input.value = '';
+      document.getElementById('newMeal').value = '';
       updateMealList(meal);
       displayResult(`成功新增「${meal}」！`, true);
       checkInput();
     }
-
     function checkInput() {
       const input = document.getElementById('newMeal');
       const addBtn = document.getElementById('addBtn');
@@ -364,7 +368,6 @@
         if (newMeal && meal === newMeal) {
           mealItem.classList.add('slide-in');
         }
-
         const mealNameSpan = document.createElement('span');
         mealNameSpan.textContent = meal;
         mealItem.appendChild(mealNameSpan);
@@ -437,7 +440,6 @@
       mealItem.classList.remove('slide-in');
       void mealItem.offsetWidth;
       mealItem.classList.add('slide-out');
-
       mealItem.addEventListener('animationend', function() {
         const index = meals.indexOf(mealName);
         if (index !== -1) {
@@ -455,7 +457,6 @@
       backupItem.classList.remove('slide-in');
       void backupItem.offsetWidth;
       backupItem.classList.add('slide-out');
-
       backupItem.addEventListener('animationend', function() {
         const index = movedMeals.indexOf(mealName);
         if (index !== -1) {
@@ -473,7 +474,6 @@
       backupItem.classList.remove('slide-in');
       void backupItem.offsetWidth;
       backupItem.classList.add('ash-out');
-
       backupItem.addEventListener('animationend', function() {
         const index = movedMeals.indexOf(mealName);
         if (index !== -1) {
