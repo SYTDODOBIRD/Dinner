@@ -25,13 +25,13 @@
     .main-area {
       flex: 2;
     }
-    /* 備用菜餚區預設隱藏（桌面版不出現） */
     .backup-area {
       flex: 1;
       background-color: #f8f8f8;
       border-radius: 8px;
       padding: 15px;
-      display: none;
+      /* 桌面版預設顯示 */
+      display: block;
     }
     h1, h2 {
       text-align: center;
@@ -190,47 +190,7 @@
       display: flex;
       gap: 5px;
     }
-    /* 手機版處理：當螢幕寬度 <= 768px 時 */
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-      /* 手機版預設僅顯示主區 */
-      .backup-area {
-        display: none;
-      }
-      /* 當加上 .show-backup 類別時，切換顯示備用區 */
-      .show-backup .main-area {
-        display: none;
-      }
-      .show-backup .backup-area {
-        display: block;
-      }
-      .random-button {
-        font-size: 20px;
-      }
-      .meal-input input[type="text"] {
-        font-size: 18px;
-      }
-      .result {
-        font-size: 24px;
-      }
-      /* 側邊備用按鈕：僅在手機版顯示 */
-      #sideBackupBtn {
-        display: block;
-      }
-    }
-    /* 桌面版隱藏側邊備用按鈕 */
-    @media (min-width: 769px) {
-      #sideBackupBtn {
-        display: none;
-      }
-      /* 桌面版隱藏備用菜餚區 */
-      .backup-area {
-        display: none;
-      }
-    }
-    /* 側邊備用按鈕（書籤效果） */
+    /* 側邊備用按鈕（行動裝置） */
     #sideBackupBtn {
       position: fixed;
       top: 50%;
@@ -249,14 +209,54 @@
     #sideBackupBtn:hover {
       background-color: #555;
     }
+    /* 針對行動裝置（螢幕寬度 ≤ 768px） */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      /* 行動裝置下預設隱藏備用菜餚區 */
+      .backup-area {
+        display: none;
+      }
+      /* 當容器加上 show-backup 類別時，顯示備用區，隱藏主區 */
+      .show-backup .main-area {
+        display: none;
+      }
+      .show-backup .backup-area {
+        display: block;
+      }
+      /* 顯示側邊備用按鈕 */
+      #sideBackupBtn {
+        display: block;
+      }
+      /* 返回主清單按鈕在行動裝置顯示 */
+      .mobile-only {
+        display: block;
+      }
+    }
+    /* 桌面版（螢幕寬度 ≥ 769px） */
+    @media (min-width: 769px) {
+      /* 隱藏側邊備用按鈕 */
+      #sideBackupBtn {
+        display: none;
+      }
+      /* 備用菜餚區保持顯示 */
+      .backup-area {
+        display: block;
+      }
+      /* 桌面版隱藏返回主清單按鈕 */
+      .mobile-only {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- 側邊備用按鈕（僅限手機版） -->
+  <!-- 側邊備用按鈕（僅限行動裝置） -->
   <button id="sideBackupBtn" onclick="showBackup()">備用菜餚</button>
   
   <div class="container" id="appContainer">
-    <!-- 左側主功能區（主清單） -->
+    <!-- 主功能區（主清單） -->
     <div class="main-area" id="mainArea">
       <h1>晚餐吃什麼?</h1>
       
@@ -275,24 +275,24 @@
       <div class="meal-management">
         <h2>菜餚</h2>
         <div class="meal-list" id="mealList">
-          <!-- 兩個欄位由 JavaScript 動態產生 -->
+          <!-- 由 JavaScript 動態產生兩欄 -->
         </div>
       </div>
     </div>
 
-    <!-- 備用菜餚區（僅供手機版使用） -->
+    <!-- 備用菜餚區 -->
     <div class="backup-area" id="backupArea">
       <h2>備用菜餚</h2>
-      <!-- 返回主清單按鈕，顯示「<」 -->
-      <button style="margin-bottom: 10px; background: #666;" onclick="showMain()"><</button>
+      <!-- 返回主清單按鈕，僅限行動裝置顯示 -->
+      <button class="mobile-only" style="margin-bottom: 10px; background: #666;" onclick="showMain()"><</button>
       <div id="backupList" class="backup-list">
-        <!-- 移動過來的菜餚將顯示在此 -->
+        <!-- 移動過來的菜餚會顯示在此 -->
       </div>
     </div>
   </div>
 
   <script>
-    // 主清單菜餚預設資料
+    // 主清單預設資料
     let meals = [
       '牛肉麵',
       '滷味',
@@ -303,7 +303,7 @@
       '炸雞',
       '咖哩飯'
     ];
-    // 備用菜餚
+    // 備用菜餚資料
     let movedMeals = [];
 
     window.onload = function() {
@@ -311,13 +311,13 @@
       updateMealList();
       updateBackupList();
       checkInput();
-    }
+    };
 
-    // (A) 顯示備用菜餚（手機版用），隱藏主清單
+    // 行動裝置：顯示備用菜餚區，隱藏主清單
     function showBackup() {
       document.getElementById('appContainer').classList.add('show-backup');
     }
-    // (B) 返回主清單（手機版用）
+    // 行動裝置：返回主清單
     function showMain() {
       document.getElementById('appContainer').classList.remove('show-backup');
     }
@@ -337,16 +337,18 @@
       localStorage.setItem('movedMeals', JSON.stringify(movedMeals));
     }
 
+    // 新增按鈕點擊：新增菜餚並立即抽選
     function onAddBtnClick() {
       const input = document.getElementById('newMeal');
       const meal = input.value.trim();
+      
+      // 檢查是否有輸入
       if (!meal) {
         alert('請先填入新菜餚');
         return;
       }
-      addMeal(meal);
-    }
-    function addMeal(meal) {
+      
+      // 檢查菜餚是否重複（主清單或備用區）
       if (meals.includes(meal)) {
         displayResult(`菜餚「${meal}」已存在！`, true);
         return;
@@ -355,13 +357,55 @@
         displayResult(`菜餚「${meal}」已在備用菜餚！`, true);
         return;
       }
+      
+      // 新增菜餚至主清單
       meals.push(meal);
       saveMeals();
-      document.getElementById('newMeal').value = '';
+      input.value = '';
       updateMealList(meal);
       displayResult(`成功新增「${meal}」！`, true);
       checkInput();
+      
+      // 新增後立即抽選主清單中的菜餚
+      if (meals.length === 0) {
+        displayResult('請先新增一些菜餚！', false);
+        return;
+      }
+      const randomIndex = Math.floor(Math.random() * meals.length);
+      const selectedMeal = meals[randomIndex];
+      
+      // 設定新視窗尺寸與位置
+      const width = 300;
+      const height = 200;
+      const left = (screen.width - width) / 2;
+      const top = (screen.height - height) / 2;
+      const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
+      
+      // 開啟新視窗顯示抽選結果
+      const newWindow = window.open("", "_blank", windowFeatures);
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+          <head>
+            <title>今晚吃什麼?</title>
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+              h1 { font-size: 24px; color: #333; }
+              .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin-top: 10px; }
+            </style>
+          </head>
+          <body>
+            <h1>今晚吃：</h1>
+            <div class="meal">${selectedMeal}</div>
+          </body>
+          </html>
+        `);
+        newWindow.document.close();
+      } else {
+        alert("無法開啟新視窗，請確認瀏覽器未封鎖彈出視窗。");
+      }
     }
+
     function checkInput() {
       const input = document.getElementById('newMeal');
       const addBtn = document.getElementById('addBtn');
@@ -381,8 +425,8 @@
       const rightColumn = document.createElement('div');
       rightColumn.className = 'meal-column';
 
+      // 將菜餚依字串長度排序，依序分配左右欄位
       const sortedMeals = meals.slice().sort((a, b) => a.length - b.length);
-
       sortedMeals.forEach((meal, sortedIndex) => {
         if (sortedIndex >= 16) return;
         const mealItem = document.createElement('div');
@@ -404,7 +448,6 @@
         };
         mealItem.appendChild(moveBtn);
 
-        // 依序分配到左右欄位
         if (sortedIndex % 2 === 0) {
           leftColumn.appendChild(mealItem);
         } else {
@@ -510,7 +553,7 @@
       }, { once: true });
     }
 
-    // 抽取隨機菜餚並在新視窗中顯示結果
+    // 保留原本抽選函式，可供其他操作使用
     function pickRandom() {
       if (meals.length === 0) {
         displayResult('請先新增一些菜餚！', false);
@@ -518,15 +561,13 @@
       }
       const randomIndex = Math.floor(Math.random() * meals.length);
       const selectedMeal = meals[randomIndex];
-      
-      // 設定新視窗尺寸與位置
+
       const width = 300;
       const height = 200;
       const left = (screen.width - width) / 2;
       const top = (screen.height - height) / 2;
       const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
 
-      // 開啟新視窗並寫入內容
       const newWindow = window.open("", "_blank", windowFeatures);
       if (newWindow) {
         newWindow.document.write(`
