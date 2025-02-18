@@ -374,35 +374,38 @@
       const randomIndex = Math.floor(Math.random() * meals.length);
       const selectedMeal = meals[randomIndex];
       
-      // 設定新視窗尺寸與位置
-      const width = 300;
-      const height = 200;
-      const left = (screen.width - width) / 2;
-      const top = (screen.height - height) / 2;
-      const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
-      
-      // 開啟新視窗顯示抽選結果
-      const newWindow = window.open("", "_blank", windowFeatures);
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-          <head>
-            <title>今晚吃什麼?</title>
-            <style>
-              body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-              h1 { font-size: 24px; color: #333; }
-              .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin-top: 10px; }
-            </style>
-          </head>
-          <body>
-            <h1>今晚吃：</h1>
-            <div class="meal">${selectedMeal}</div>
-          </body>
-          </html>
-        `);
-        newWindow.document.close();
+      // ★ 判斷螢幕寬度，若小於等於768px（行動版）就用 alert()，否則開新視窗
+      if (window.innerWidth <= 768) {
+        alert(`今晚吃：${selectedMeal}`);
       } else {
-        alert("無法開啟新視窗，請確認瀏覽器未封鎖彈出視窗。");
+        const width = 300;
+        const height = 200;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
+        
+        const newWindow = window.open("", "_blank", windowFeatures);
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+            <head>
+              <title>今晚吃什麼?</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+                h1 { font-size: 24px; color: #333; }
+                .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin-top: 10px; }
+              </style>
+            </head>
+            <body>
+              <h1>今晚吃：</h1>
+              <div class="meal">${selectedMeal}</div>
+            </body>
+            </html>
+          `);
+          newWindow.document.close();
+        } else {
+          alert("無法開啟新視窗，請確認瀏覽器未封鎖彈出視窗。");
+        }
       }
     }
 
@@ -553,7 +556,7 @@
       }, { once: true });
     }
 
-    // 保留原本抽選函式，可供其他操作使用
+    // 抽選按鈕的函式（不透過新增）
     function pickRandom() {
       if (meals.length === 0) {
         displayResult('請先新增一些菜餚！', false);
@@ -562,33 +565,38 @@
       const randomIndex = Math.floor(Math.random() * meals.length);
       const selectedMeal = meals[randomIndex];
 
-      const width = 300;
-      const height = 200;
-      const left = (screen.width - width) / 2;
-      const top = (screen.height - height) / 2;
-      const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
-
-      const newWindow = window.open("", "_blank", windowFeatures);
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-          <head>
-            <title>今晚吃什麼?</title>
-            <style>
-              body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-              h1 { font-size: 24px; color: #333; }
-              .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin-top: 10px; }
-            </style>
-          </head>
-          <body>
-            <h1>今晚吃：</h1>
-            <div class="meal">${selectedMeal}</div>
-          </body>
-          </html>
-        `);
-        newWindow.document.close();
+      // ★ 同樣判斷螢幕寬度，行動版用 alert，桌面版用新視窗
+      if (window.innerWidth <= 768) {
+        alert(`今晚吃：${selectedMeal}`);
       } else {
-        alert("無法開啟新視窗，請確認瀏覽器未封鎖彈出視窗。");
+        const width = 300;
+        const height = 200;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
+
+        const newWindow = window.open("", "_blank", windowFeatures);
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+            <head>
+              <title>今晚吃什麼?</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+                h1 { font-size: 24px; color: #333; }
+                .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin-top: 10px; }
+              </style>
+            </head>
+            <body>
+              <h1>今晚吃：</h1>
+              <div class="meal">${selectedMeal}</div>
+            </body>
+            </html>
+          `);
+          newWindow.document.close();
+        } else {
+          alert("無法開啟新視窗，請確認瀏覽器未封鎖彈出視窗。");
+        }
       }
     }
 
