@@ -267,7 +267,7 @@
 
       <button class="random-button" onclick="pickRandom()">抽!</button>
 
-      <!-- 提示訊息區（桌面版可能仍會使用） -->
+      <!-- 提示訊息區 -->
       <div class="result" id="result">
         <span id="resultText"></span>
       </div>
@@ -292,7 +292,7 @@
   </div>
 
   <script>
-    // 主清單菜餚
+    // 主清單菜餚預設資料
     let meals = [
       '牛肉麵',
       '滷味',
@@ -404,6 +404,7 @@
         };
         mealItem.appendChild(moveBtn);
 
+        // 依序分配到左右欄位
         if (sortedIndex % 2 === 0) {
           leftColumn.appendChild(mealItem);
         } else {
@@ -462,7 +463,7 @@
       const mealItem = btnElement.parentElement;
       const mealName = mealItem.getAttribute('data-meal');
       mealItem.classList.remove('slide-in');
-      void mealItem.offsetWidth;
+      void mealItem.offsetWidth; // 觸發重繪
       mealItem.classList.add('slide-out');
       mealItem.addEventListener('animationend', function() {
         const index = meals.indexOf(mealName);
@@ -509,7 +510,7 @@
       }, { once: true });
     }
 
-    // 修改抽取結果為跳出新視窗，內容顯示「今晚吃 : 抽取結果!」
+    // 抽取隨機菜餚並在新視窗中顯示結果
     function pickRandom() {
       if (meals.length === 0) {
         displayResult('請先新增一些菜餚！', false);
@@ -527,8 +528,27 @@
 
       // 開啟新視窗並寫入內容
       const newWindow = window.open("", "_blank", windowFeatures);
-      newWindow.document.write(`<h1 style="text-align:center;margin-top:50px;">今晚吃 : ${selectedMeal}!</h1>`);
-      newWindow.document.close();
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+          <head>
+            <title>今晚吃什麼?</title>
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+              h1 { font-size: 24px; color: #333; }
+              .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin-top: 10px; }
+            </style>
+          </head>
+          <body>
+            <h1>今晚吃：</h1>
+            <div class="meal">${selectedMeal}</div>
+          </body>
+          </html>
+        `);
+        newWindow.document.close();
+      } else {
+        alert("無法開啟新視窗，請確認瀏覽器未封鎖彈出視窗。");
+      }
     }
 
     function displayResult(message, fade) {
