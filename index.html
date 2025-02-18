@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>晚餐吃什麼?</title>
   <style>
+    /* 基本樣式 */
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       margin: 0;
       padding: 20px;
       background-color: #f5f5f5;
+      text-align: center;
     }
     .container {
       max-width: 1000px;
@@ -30,11 +32,9 @@
       background-color: #f8f8f8;
       border-radius: 8px;
       padding: 15px;
-      /* 桌面版預設顯示 */
       display: block;
     }
     h1, h2 {
-      text-align: center;
       color: #333;
       margin-bottom: 20px;
     }
@@ -42,6 +42,7 @@
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
+      justify-content: center;
     }
     input[type="text"] {
       flex: 1;
@@ -79,21 +80,6 @@
     .random-button:hover {
       background-color: #1976D2;
     }
-    .result {
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 20px;
-      padding: 20px;
-      color: #333;
-      min-height: 40px;
-      background-color: #f8f8f8;
-      border-radius: 8px;
-    }
-    #resultText {
-      transition: opacity 0.5s;
-      opacity: 1;
-    }
     .meal-management {
       background-color: #f8f8f8;
       padding: 15px;
@@ -102,6 +88,7 @@
     .meal-list {
       display: flex;
       gap: 10px;
+      justify-content: center;
     }
     .meal-column {
       flex: 1;
@@ -209,50 +196,92 @@
     #sideBackupBtn:hover {
       background-color: #555;
     }
-    /* 針對行動裝置（螢幕寬度 ≤ 768px） */
+    /* 行動裝置樣式（螢幕寬度 ≤ 768px） */
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
       }
-      /* 行動裝置下預設隱藏備用菜餚區 */
       .backup-area {
         display: none;
       }
-      /* 當容器加上 show-backup 類別時，顯示備用區，隱藏主區 */
       .show-backup .main-area {
         display: none;
       }
       .show-backup .backup-area {
         display: block;
       }
-      /* 顯示側邊備用按鈕 */
       #sideBackupBtn {
         display: block;
       }
-      /* 返回主清單按鈕在行動裝置顯示 */
       .mobile-only {
         display: block;
       }
     }
     /* 桌面版（螢幕寬度 ≥ 769px） */
     @media (min-width: 769px) {
-      /* 隱藏側邊備用按鈕 */
       #sideBackupBtn {
         display: none;
       }
-      /* 備用菜餚區保持顯示 */
       .backup-area {
         display: block;
       }
-      /* 桌面版隱藏返回主清單按鈕 */
       .mobile-only {
         display: none;
       }
     }
+    /* Modal 視窗樣式 */
+    .modal {
+      display: none; /* 預設隱藏 */
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 400px;
+      position: relative;
+      margin-top: 10%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 18px;
+      cursor: pointer;
+      color: #aaa;
+    }
+    .close-btn:hover {
+      color: #000;
+    }
+    .modal h1 {
+      font-size: 24px;
+      color: #333;
+      margin: 0;
+    }
+    .modal .meal {
+      font-size: 30px;
+      font-weight: bold;
+      color: #d32f2f;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
-  <!-- 側邊備用按鈕（僅限行動裝置） -->
+  <!-- 側邊備用按鈕（僅行動裝置） -->
   <button id="sideBackupBtn" onclick="showBackup()">備用菜餚</button>
   
   <div class="container" id="appContainer">
@@ -267,11 +296,8 @@
 
       <button class="random-button" onclick="pickRandom()">抽!</button>
 
-      <!-- 提示訊息區 -->
-      <div class="result" id="result">
-        <span id="resultText"></span>
-      </div>
-
+      <!-- 已刪除 .result 區塊 -->
+      
       <div class="meal-management">
         <h2>菜餚</h2>
         <div class="meal-list" id="mealList">
@@ -283,7 +309,7 @@
     <!-- 備用菜餚區 -->
     <div class="backup-area" id="backupArea">
       <h2>備用菜餚</h2>
-      <!-- 返回主清單按鈕，僅限行動裝置顯示 -->
+      <!-- 返回主清單按鈕（僅行動裝置） -->
       <button class="mobile-only" style="margin-bottom: 10px; background: #666;" onclick="showMain()"><</button>
       <div id="backupList" class="backup-list">
         <!-- 移動過來的菜餚會顯示在此 -->
@@ -291,17 +317,25 @@
     </div>
   </div>
 
+  <!-- Modal 視窗結構（抽選結果） -->
+  <div id="mealModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h1>今晚吃：</h1>
+      <div class="meal" id="modalMeal"></div>
+    </div>
+  </div>
+
   <script>
     // 主清單預設資料
     let meals = [
+      '炒飯',
       '牛肉麵',
-      '滷味',
-      '雞腿便當',
-      '滷排便當',
-      '韓式泡菜豆腐鍋',
-      '三寶飯',
       '炸雞',
-      '咖哩飯'
+      '咖哩飯',
+      '滷味便當',
+      '酸菜白肉面',
+      '三寶飯'
     ];
     // 備用菜餚資料
     let movedMeals = [];
@@ -313,7 +347,7 @@
       checkInput();
     };
 
-    // 行動裝置：顯示備用菜餚區，隱藏主清單
+    // 行動裝置：顯示備用菜餚區
     function showBackup() {
       document.getElementById('appContainer').classList.add('show-backup');
     }
@@ -322,6 +356,7 @@
       document.getElementById('appContainer').classList.remove('show-backup');
     }
 
+    // 載入 localStorage 資料
     function loadMeals() {
       const storedMeals = localStorage.getItem('meals');
       if (storedMeals) {
@@ -332,6 +367,7 @@
         movedMeals = JSON.parse(storedMovedMeals);
       }
     }
+    // 儲存資料至 localStorage
     function saveMeals() {
       localStorage.setItem('meals', JSON.stringify(meals));
       localStorage.setItem('movedMeals', JSON.stringify(movedMeals));
@@ -348,13 +384,14 @@
         return;
       }
       
-      // 檢查菜餚是否重複（主清單或備用區）
+      // 檢查菜餚是否重複
       if (meals.includes(meal)) {
-        displayResult(`菜餚「${meal}」已存在！`, true);
+        // 以前是用 displayResult，現在改用 alert 或其他方式
+        alert(`菜餚「${meal}」已存在！`);
         return;
       }
       if (movedMeals.includes(meal)) {
-        displayResult(`菜餚「${meal}」已在備用菜餚！`, true);
+        alert(`菜餚「${meal}」已在備用菜餚！`);
         return;
       }
       
@@ -363,52 +400,20 @@
       saveMeals();
       input.value = '';
       updateMealList(meal);
-      displayResult(`成功新增「${meal}」！`, true);
+      alert(`成功新增「${meal}」！`);
       checkInput();
       
-      // 新增後立即抽選主清單中的菜餚
+      // 新增後立即抽選
       if (meals.length === 0) {
-        displayResult('請先新增一些菜餚！', false);
+        alert('請先新增一些菜餚！');
         return;
       }
       const randomIndex = Math.floor(Math.random() * meals.length);
       const selectedMeal = meals[randomIndex];
-      
-      // ★ 判斷螢幕寬度，若小於等於768px（行動版）就用 alert()，否則開新視窗
-      if (window.innerWidth <= 768) {
-        alert(`今晚吃：${selectedMeal}`);
-      } else {
-        const width = 300;
-        const height = 200;
-        const left = (screen.width - width) / 2;
-        const top = (screen.height - height) / 2;
-        const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
-        
-        const newWindow = window.open("", "_blank", windowFeatures);
-        if (newWindow) {
-          newWindow.document.write(`
-            <html>
-            <head>
-              <title>今晚吃什麼?</title>
-              <style>
-                body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-                h1 { font-size: 24px; color: #333; }
-                .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin-top: 10px; }
-              </style>
-            </head>
-            <body>
-              <h1>今晚吃：</h1>
-              <div class="meal">${selectedMeal}</div>
-            </body>
-            </html>
-          `);
-          newWindow.document.close();
-        } else {
-          alert("無法開啟新視窗，請確認瀏覽器未封鎖彈出視窗。");
-        }
-      }
+      showMealResult(selectedMeal);
     }
 
+    // 檢查輸入欄位是否有內容，決定按鈕狀態
     function checkInput() {
       const input = document.getElementById('newMeal');
       const addBtn = document.getElementById('addBtn');
@@ -419,6 +424,7 @@
       }
     }
 
+    // 更新主清單畫面
     function updateMealList(newMeal = null) {
       const list = document.getElementById('mealList');
       list.innerHTML = '';
@@ -428,7 +434,7 @@
       const rightColumn = document.createElement('div');
       rightColumn.className = 'meal-column';
 
-      // 將菜餚依字串長度排序，依序分配左右欄位
+      // 依字串長度排序後分配左右欄位，限制顯示筆數
       const sortedMeals = meals.slice().sort((a, b) => a.length - b.length);
       sortedMeals.forEach((meal, sortedIndex) => {
         if (sortedIndex >= 16) return;
@@ -451,17 +457,14 @@
         };
         mealItem.appendChild(moveBtn);
 
-        if (sortedIndex % 2 === 0) {
-          leftColumn.appendChild(mealItem);
-        } else {
-          rightColumn.appendChild(mealItem);
-        }
+        (sortedIndex % 2 === 0 ? leftColumn : rightColumn).appendChild(mealItem);
       });
 
       list.appendChild(leftColumn);
       list.appendChild(rightColumn);
     }
 
+    // 更新備用菜餚清單
     function updateBackupList(newMeal = null) {
       const backupList = document.getElementById('backupList');
       backupList.innerHTML = '';
@@ -505,6 +508,7 @@
       });
     }
 
+    // 將菜餚移到備用區
     function moveMeal(btnElement) {
       const mealItem = btnElement.parentElement;
       const mealName = mealItem.getAttribute('data-meal');
@@ -520,10 +524,11 @@
         saveMeals();
         updateMealList();
         updateBackupList(mealName);
-        displayResult(`已將「${mealName}」移至備用菜餚`, true);
+        alert(`已將「${mealName}」移至備用菜餚`);
       }, { once: true });
     }
 
+    // 將菜餚從備用區移回主清單
     function moveMealBack(mealName, backupItem) {
       backupItem.classList.remove('slide-in');
       void backupItem.offsetWidth;
@@ -537,10 +542,11 @@
         saveMeals();
         updateMealList(mealName);
         updateBackupList();
-        displayResult(`已將「${mealName}」移回主清單`, true);
+        alert(`已將「${mealName}」移回主清單`);
       }, { once: true });
     }
 
+    // 從備用區刪除菜餚
     function deleteFromBackup(mealName, backupItem) {
       backupItem.classList.remove('slide-in');
       void backupItem.offsetWidth;
@@ -551,72 +557,36 @@
           movedMeals.splice(index, 1);
           saveMeals();
           updateBackupList();
-          displayResult(`已刪除「${mealName}」`, true);
+          alert(`已刪除「${mealName}」`);
         }
       }, { once: true });
     }
 
-    // 抽選按鈕的函式（不透過新增）
+    // 抽選按鈕功能
     function pickRandom() {
       if (meals.length === 0) {
-        displayResult('請先新增一些菜餚！', false);
+        alert('請先新增一些菜餚！');
         return;
       }
       const randomIndex = Math.floor(Math.random() * meals.length);
       const selectedMeal = meals[randomIndex];
+      showMealResult(selectedMeal);
+    }
 
-      // ★ 同樣判斷螢幕寬度，行動版用 alert，桌面版用新視窗
+    // 根據螢幕寬度選擇結果顯示方式：行動版用 alert，桌面版使用 modal
+    function showMealResult(selectedMeal) {
       if (window.innerWidth <= 768) {
         alert(`今晚吃：${selectedMeal}`);
       } else {
-        const width = 300;
-        const height = 200;
-        const left = (screen.width - width) / 2;
-        const top = (screen.height - height) / 2;
-        const windowFeatures = `width=${width},height=${height},left=${left},top=${top}`;
-
-        const newWindow = window.open("", "_blank", windowFeatures);
-        if (newWindow) {
-          newWindow.document.write(`
-            <html>
-            <head>
-              <title>今晚吃什麼?</title>
-              <style>
-                body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-                h1 { font-size: 24px; color: #333; }
-                .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin-top: 10px; }
-              </style>
-            </head>
-            <body>
-              <h1>今晚吃：</h1>
-              <div class="meal">${selectedMeal}</div>
-            </body>
-            </html>
-          `);
-          newWindow.document.close();
-        } else {
-          alert("無法開啟新視窗，請確認瀏覽器未封鎖彈出視窗。");
-        }
+        document.getElementById('modalMeal').textContent = selectedMeal;
+        document.getElementById('mealModal').style.display = 'flex';
       }
     }
 
-    function displayResult(message, fade) {
-      const resultText = document.getElementById('resultText');
-      resultText.textContent = message;
-      resultText.style.opacity = 1;
-      if (fade) {
-        setTimeout(() => {
-          resultText.style.opacity = 0;
-        }, 2000);
-      }
+    // 關閉 modal 的函式
+    function closeModal() {
+      document.getElementById('mealModal').style.display = 'none';
     }
-
-    document.getElementById('newMeal').addEventListener('input', checkInput);
-    document.getElementById('newMeal').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        onAddBtnClick();
-      }
-    });
   </script>
 </body>
 </html>
