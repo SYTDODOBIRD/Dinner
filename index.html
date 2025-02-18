@@ -18,15 +18,13 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      /* 讓左側和右側區域在任何螢幕都左右並排 */
       display: flex;
       gap: 20px;
     }
-    /* 左側主功能區（主清單） */
+    /* 主區與備用區樣式 */
     .main-area {
       flex: 2;
     }
-    /* 右側備用菜餚區 */
     .backup-area {
       flex: 1;
       background-color: #f8f8f8;
@@ -59,19 +57,16 @@
       transition: background-color 0.3s;
       color: white;
     }
-    /* 新增按鈕 */
     #addBtn {
-      background-color: #4CAF50; /* 綠色 */
+      background-color: #4CAF50;
     }
     #addBtn:hover {
       background-color: #45a049;
     }
-    /* 當按鈕呈現「不可用」外觀時，用 .disabled-btn 類別來呈現灰色 */
     .disabled-btn {
       background-color: #aaa !important; 
       color: #fff !important; 
     }
-    /* 「抽!」按鈕 */
     .random-button {
       width: 100%;
       margin-bottom: 20px;
@@ -82,7 +77,6 @@
     .random-button:hover {
       background-color: #1976D2;
     }
-    /* 結果顯示區 */
     .result {
       text-align: center;
       font-size: 28px;
@@ -121,7 +115,6 @@
       background-color: white;
       border-radius: 4px;
     }
-    /* 動畫 */
     @keyframes slideIn {
       from {
         transform: translateX(-100%);
@@ -162,25 +155,21 @@
     .slide-out {
       animation: slideOut 0.5s forwards;
     }
-    /* 灰飛煙滅動畫 */
     .ash-out {
       animation: ashOut 0.8s forwards ease-in;
     }
-    /* 移動按鈕改為橘色 */
     .move-btn {
-      background-color: #FF9800; /* 橘色 */
+      background-color: #FF9800;
     }
     .move-btn:hover {
       background-color: #FB8C00;
     }
-    /* 刪除按鈕為紅色 */
     .delete-btn {
       background-color: #f44336;
     }
     .delete-btn:hover {
       background-color: #da190b;
     }
-    /* 備用菜餚列表 */
     .backup-list {
       display: flex;
       flex-direction: column;
@@ -199,14 +188,63 @@
       display: flex;
       gap: 5px;
     }
+
+    /* 手機版處理 */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      .backup-area {
+        display: none;
+      }
+      .show-backup .main-area {
+        display: none;
+      }
+      .show-backup .backup-area {
+        display: block;
+      }
+      .random-button {
+        font-size: 20px;
+      }
+      .meal-input input[type="text"] {
+        font-size: 18px;
+      }
+      .result {
+        font-size: 24px;
+      }
+    }
+
+    /* 側邊備用按鈕（書籤效果） */
+    #sideBackupBtn {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      transform: translate(-50%, -50%) rotate(-90deg);
+      transform-origin: center;
+      background-color: #666;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 1000;
+      transition: background-color 0.3s;
+    }
+    #sideBackupBtn:hover {
+      background-color: #555;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- 左側主功能區 -->
-    <div class="main-area">
+  <!-- 側邊備用按鈕 -->
+  <button id="sideBackupBtn" onclick="showBackup()">備用菜餚</button>
+  
+  <div class="container" id="appContainer">
+    <!-- 左側主功能區（主清單） -->
+    <div class="main-area" id="mainArea">
       <h1>晚餐吃什麼?</h1>
-
+      <!-- 原本的備用菜餚按鈕已移除 -->
+      
       <div class="meal-input">
         <input type="text" id="newMeal" placeholder="輸入新菜餚">
         <button id="addBtn" onclick="onAddBtnClick()">新增</button>
@@ -214,6 +252,7 @@
 
       <button class="random-button" onclick="pickRandom()">抽!</button>
 
+      <!-- 提示訊息區 -->
       <div class="result" id="result">
         <span id="resultText"></span>
       </div>
@@ -221,16 +260,18 @@
       <div class="meal-management">
         <h2>菜餚</h2>
         <div class="meal-list" id="mealList">
-          <!-- 兩欄由 JavaScript 動態產生 -->
+          <!-- 兩個欄位由 JavaScript 動態產生 -->
         </div>
       </div>
     </div>
 
-    <!-- 右側備用菜餚區 (永遠顯示) -->
-    <div class="backup-area">
+    <!-- 右側備用菜餚區 -->
+    <div class="backup-area" id="backupArea">
       <h2>備用菜餚</h2>
+      <!-- 返回主清單按鈕 -->
+      <button style="margin-bottom: 10px; background: #666;" onclick="showMain()">返回</button>
       <div id="backupList" class="backup-list">
-        <!-- 移動過來的菜餚將顯示在此，並可再操作 -->
+        <!-- 移動過來的菜餚將顯示在此 -->
       </div>
     </div>
   </div>
@@ -255,7 +296,14 @@
       updateMealList();
       updateBackupList();
       checkInput();
-    };
+    }
+
+    function showBackup() {
+      document.getElementById('appContainer').classList.add('show-backup');
+    }
+    function showMain() {
+      document.getElementById('appContainer').classList.remove('show-backup');
+    }
 
     function loadMeals() {
       const storedMeals = localStorage.getItem('meals');
@@ -276,7 +324,7 @@
       const input = document.getElementById('newMeal');
       const meal = input.value.trim();
       if (!meal) {
-        alert('請先填家新菜餚');
+        alert('請先填入新菜餚');
         return;
       }
       addMeal(meal);
@@ -324,7 +372,6 @@
         mealItem.className = 'meal-list-item';
         mealItem.setAttribute('data-meal', meal);
 
-        // 如果是最新加入的菜餚，套用滑入動畫
         if (newMeal && meal === newMeal) {
           mealItem.classList.add('slide-in');
         }
@@ -340,7 +387,6 @@
         };
         mealItem.appendChild(moveBtn);
 
-        // 交錯放入左右欄
         if (sortedIndex % 2 === 0) {
           leftColumn.appendChild(mealItem);
         } else {
@@ -363,6 +409,7 @@
         if (newMeal && meal === newMeal) {
           backupItem.classList.add('slide-in');
         }
+
         const mealNameSpan = document.createElement('span');
         mealNameSpan.textContent = meal;
         backupItem.appendChild(mealNameSpan);
