@@ -103,6 +103,8 @@
       padding: 8px;
       background-color: white;
       border-radius: 4px;
+      /* 行動版時要可點擊整塊，給個 cursor pointer */
+      cursor: pointer;
     }
     @keyframes slideIn {
       from {
@@ -172,6 +174,7 @@
       padding: 8px;
       background-color: white;
       border-radius: 4px;
+      cursor: pointer; /* 行動版也可點整塊 */
     }
     .backup-btn-area {
       display: flex;
@@ -215,6 +218,16 @@
       }
       .mobile-only {
         display: block;
+      }
+      /* 
+        行動版時，隱藏主清單中的「移動」按鈕 
+        (也可視需求一併隱藏刪除按鈕，如果本來有的話)
+      */
+      .meal-list-item .move-btn {
+        display: none;
+      }
+      .meal-list-item .delete-btn {
+        display: none;
       }
     }
     /* 桌面版（螢幕寬度 ≥ 769px） */
@@ -278,6 +291,41 @@
       color: #d32f2f;
       margin: 0;
     }
+
+    /* 行動版彈出選單 (示範用) */
+    .mobile-menu {
+      display: none; /* 預設隱藏 */
+      position: fixed;
+      z-index: 3000; /* 高於 modal */
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .mobile-menu h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .mobile-menu button {
+      margin: 5px;
+      padding: 8px 16px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: none;
+      color: #fff;
+    }
+    .mobile-menu .move-btn {
+      background-color: #FF9800;
+    }
+    .mobile-menu .delete-btn {
+      background-color: #f44336;
+    }
   </style>
 </head>
 <body>
@@ -296,7 +344,7 @@
 
       <button class="random-button" onclick="pickRandom()">抽!</button>
 
-      <!-- 已刪除 .result 區塊 -->
+      <!-- 已刪除 result 區塊 (若原本有) -->
       
       <div class="meal-management">
         <h2>菜餚</h2>
@@ -326,6 +374,13 @@
     </div>
   </div>
 
+  <!-- 行動版專用的彈出選單 -->
+  <div id="mobileMenu" class="mobile-menu">
+    <h3 id="mobileMenuTitle"></h3>
+    <button class="move-btn" onclick="onMobileMove()">移動</button>
+    <button class="delete-btn" onclick="onMobileDelete()">刪除</button>
+  </div>
+
   <script>
     // 主清單預設資料
     let meals = [
@@ -339,6 +394,10 @@
     ];
     // 備用菜餚資料
     let movedMeals = [];
+
+    // 用來暫存行動版目前被點擊的「菜餚名稱」及其DOM元素
+    let currentClickedMealName = null;
+    let currentClickedMealItem = null;
 
     window.onload = function() {
       loadMeals();
@@ -378,15 +437,11 @@
       const input = document.getElementById('newMeal');
       const meal = input.value.trim();
       
-      // 檢查是否有輸入
       if (!meal) {
         alert('請先填入新菜餚');
         return;
       }
-      
-      // 檢查菜餚是否重複
       if (meals.includes(meal)) {
-        // 以前是用 displayResult，現在改用 alert 或其他方式
         alert(`菜餚「${meal}」已存在！`);
         return;
       }
@@ -395,7 +450,6 @@
         return;
       }
       
-      // 新增菜餚至主清單
       meals.push(meal);
       saveMeals();
       input.value = '';
@@ -403,7 +457,6 @@
       alert(`成功新增「${meal}」！`);
       checkInput();
       
-      // 新增後立即抽選
       if (meals.length === 0) {
         alert('請先新增一些菜餚！');
         return;
@@ -442,6 +495,11 @@
         mealItem.className = 'meal-list-item';
         mealItem.setAttribute('data-meal', meal);
 
+        // 行動版：點擊整塊 => 顯示選單
+        mealItem.onclick = function() {
+          onMealItemClick(meal, mealItem);
+        };
+
         if (newMeal && meal === newMeal) {
           mealItem.classList.add('slide-in');
         }
@@ -449,10 +507,13 @@
         mealNameSpan.textContent = meal;
         mealItem.appendChild(mealNameSpan);
 
+        // 桌面版繼續顯示「移動」按鈕 (行動版用CSS隱藏)
         const moveBtn = document.createElement('button');
         moveBtn.className = 'move-btn';
         moveBtn.textContent = '移動';
-        moveBtn.onclick = function() {
+        moveBtn.onclick = function(e) {
+          // 避免點擊按鈕時也觸發 mealItem.onclick
+          e.stopPropagation();
           moveMeal(this);
         };
         mealItem.appendChild(moveBtn);
@@ -464,6 +525,47 @@
       list.appendChild(rightColumn);
     }
 
+    // 行動版：點擊某個「菜餚」方塊後，顯示選單
+    function onMealItemClick(meal, mealItem) {
+      // 如果螢幕寬度大於 768，就不彈出行動版選單
+      if (window.innerWidth > 768) return;
+
+      currentClickedMealName = meal;
+      currentClickedMealItem = mealItem;
+      document.getElementById('mobileMenuTitle').textContent = `「${meal}」操作選單`;
+      document.getElementById('mobileMenu').style.display = 'block';
+    }
+
+    // 行動版選單：移動
+    function onMobileMove() {
+      if (!currentClickedMealName || !currentClickedMealItem) return;
+      // 直接呼叫原本的移動函式
+      moveMeal(currentClickedMealItem.querySelector('.move-btn'));
+      closeMobileMenu();
+    }
+
+    // 行動版選單：刪除
+    function onMobileDelete() {
+      if (!currentClickedMealName || !currentClickedMealItem) return;
+      // 在主清單其實沒有「刪除」功能(原本只在備用清單?), 
+      // 若你想在主清單也能刪除，就可以自己寫 deleteMeal() 類似的函式。
+      // 這裡示範最簡單：從 meals 中移除
+      const index = meals.indexOf(currentClickedMealName);
+      if (index !== -1) {
+        meals.splice(index, 1);
+        saveMeals();
+        updateMealList();
+        alert(`已刪除「${currentClickedMealName}」`);
+      }
+      closeMobileMenu();
+    }
+
+    function closeMobileMenu() {
+      document.getElementById('mobileMenu').style.display = 'none';
+      currentClickedMealName = null;
+      currentClickedMealItem = null;
+    }
+
     // 更新備用菜餚清單
     function updateBackupList(newMeal = null) {
       const backupList = document.getElementById('backupList');
@@ -472,6 +574,12 @@
       movedMeals.forEach(meal => {
         const backupItem = document.createElement('div');
         backupItem.className = 'backup-item';
+        backupItem.setAttribute('data-meal', meal);
+
+        // 行動版：點擊整塊 => 顯示選單 (可做同樣彈窗處理)
+        backupItem.onclick = function() {
+          onBackupItemClick(meal, backupItem);
+        };
 
         if (newMeal && meal === newMeal) {
           backupItem.classList.add('slide-in');
@@ -481,13 +589,15 @@
         mealNameSpan.textContent = meal;
         backupItem.appendChild(mealNameSpan);
 
+        // 桌面版: 顯示「移動回來」與「刪除」按鈕
         const btnArea = document.createElement('div');
         btnArea.className = 'backup-btn-area';
 
         const moveBackBtn = document.createElement('button');
         moveBackBtn.className = 'move-btn';
         moveBackBtn.textContent = '移動';
-        moveBackBtn.onclick = function() {
+        moveBackBtn.onclick = function(e) {
+          e.stopPropagation();
           moveMealBack(meal, backupItem);
         };
         btnArea.appendChild(moveBackBtn);
@@ -495,7 +605,8 @@
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.textContent = '刪除';
-        deleteBtn.onclick = function() {
+        deleteBtn.onclick = function(e) {
+          e.stopPropagation();
           const confirmDelete = confirm(`確定要刪除「${meal}」嗎？`);
           if (confirmDelete) {
             deleteFromBackup(meal, backupItem);
@@ -506,6 +617,19 @@
         backupItem.appendChild(btnArea);
         backupList.appendChild(backupItem);
       });
+    }
+
+    // 行動版：點擊某個「備用菜餚」方塊後，若也要彈出選單，可參考此做法
+    function onBackupItemClick(meal, backupItem) {
+      if (window.innerWidth > 768) return;
+      // 類似 onMealItemClick 的做法，視需求實作
+      currentClickedMealName = meal;
+      currentClickedMealItem = backupItem;
+      document.getElementById('mobileMenuTitle').textContent = `「${meal}」操作選單`;
+      document.getElementById('mobileMenu').style.display = 'block';
+
+      // 但備用清單的邏輯跟主清單不同，onMobileMove() 可能要改成 "移回主清單"
+      // 或另外再寫一個 onMobileMoveBackup() ...
     }
 
     // 將菜餚移到備用區
