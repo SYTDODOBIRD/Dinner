@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>吃什麼?</title>
   <style>
-    /* 版本資訊，定位在白色背景容器的右上角 */
+    /* 版本資訊 */
     .version {
       position: absolute;
       top: 10px;
@@ -86,18 +86,12 @@
       padding: 15px;
       border-radius: 8px;
     }
-    /* 設定菜餚清單可捲動，並限定高度只顯示約10行 */
+    /* 統一採用行動版樣式：菜餚清單最大高度設定為300px */
     .meal-list {
-      max-height: 400px; /* 桌機版最大高度 */
+      max-height: 300px;
       overflow-y: auto;
       display: flex;
       justify-content: center;
-    }
-    /* 行動版設定：螢幕寬度小於768px時 */
-    @media (max-width: 768px) {
-      .meal-list {
-        max-height: 300px; /* 可依實際需求調整 */
-      }
     }
     .meal-column {
       display: flex;
@@ -105,7 +99,7 @@
       gap: 8px;
       width: 100%;
     }
-    /* 固定菜餚項目高度，並移除行動版點擊後的藍色框框 */
+    /* 固定菜餚項目高度，並移除行動版點擊後的藍色框 */
     .meal-list-item {
       display: flex;
       justify-content: space-between;
@@ -116,8 +110,8 @@
       cursor: pointer;
       position: relative;
       height: 40px;
-      outline: none; /* 移除聚焦框 */
-      -webkit-tap-highlight-color: transparent; /* 行動裝置點擊效果移除藍色框 */
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
     }
     /* 動畫效果 */
     @keyframes slideIn {
@@ -136,7 +130,7 @@
     .delete-btn:hover {
       background-color: #da190b;
     }
-    /* Modal 視窗樣式（抽選結果用） */
+    /* Modal 視窗樣式 */
     .modal {
       display: none;
       position: fixed;
@@ -218,7 +212,6 @@
       font-size: 16px;
       border-radius: 4px;
     }
-    /* 按鈕樣式（互換取消與隱藏的背景顏色） */
     .action-menu .hide-btn {
       background-color: #4CAF50;
     }
@@ -228,13 +221,23 @@
     .action-menu .delete-btn {
       background-color: #f44336;
     }
+    /* overlay 全頁遮罩：灰色半透明，點擊可觸發取消 */
+    #overlay {
+      display: none;
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2500;
+      background: rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div class="container" id="appContainer">
-    <!-- 版本資訊放在白色背景容器的右上角 -->
     <div class="version">Version 1.0</div>
-    <!-- 主功能區（主清單） -->
     <div class="main-area" id="mainArea">
       <h1>吃什麼?</h1>
       <div class="meal-input">
@@ -245,13 +248,13 @@
       <div class="meal-management">
         <h2>菜餚</h2>
         <div class="meal-list" id="mealList">
-          <!-- 由 JavaScript 動態產生單一欄位 -->
+          <!-- JavaScript 產生單一欄位 -->
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal 視窗結構（抽選結果） -->
+  <!-- Modal 視窗（抽選結果） -->
   <div id="mealModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -261,7 +264,6 @@
 
   <!-- 操作選單 -->
   <div id="actionMenu" class="action-menu">
-    <!-- 標題僅顯示菜餚名稱 -->
     <h3 id="actionMenuTitle"></h3>
     <div class="btn-container">
       <button id="toggleHideBtn" class="hide-btn" onclick="">隱藏</button>
@@ -269,9 +271,12 @@
       <button class="delete-btn" onclick="deleteMeal()">刪除</button>
     </div>
   </div>
+  
+  <!-- overlay 全頁遮罩（點擊取消操作選單） -->
+  <div id="overlay" onclick="cancelAction()"></div>
 
   <script>
-    // 主清單預設資料（菜餚名稱的陣列）
+    // 主清單預設菜餚
     let meals = [
       '炒飯',
       '牛肉麵',
@@ -281,10 +286,7 @@
       '酸菜白肉面',
       '三寶飯'
     ];
-    // 用來記錄隱藏的菜餚名稱
     let hiddenMeals = [];
-
-    // 用來暫存點擊的菜餚 DOM 與名稱
     let currentMealItem = null;
     let currentMealName = null;
 
@@ -294,29 +296,21 @@
       checkInput();
     };
 
-    // 載入 localStorage 資料（只針對 meals 與 hiddenMeals）
     function loadMeals() {
       const storedMeals = localStorage.getItem('meals');
-      if (storedMeals) {
-        meals = JSON.parse(storedMeals);
-      }
+      if (storedMeals) meals = JSON.parse(storedMeals);
       const storedHidden = localStorage.getItem('hiddenMeals');
-      if (storedHidden) {
-        hiddenMeals = JSON.parse(storedHidden);
-      }
+      if (storedHidden) hiddenMeals = JSON.parse(storedHidden);
     }
 
-    // 儲存資料至 localStorage
     function saveMeals() {
       localStorage.setItem('meals', JSON.stringify(meals));
       localStorage.setItem('hiddenMeals', JSON.stringify(hiddenMeals));
     }
 
-    // 新增按鈕點擊：新增菜餚（不自動抽選）
     function onAddBtnClick() {
       const input = document.getElementById('newMeal');
       const meal = input.value.trim();
-      
       if (!meal) {
         alert('請先填入新菜餚');
         return;
@@ -325,7 +319,6 @@
         alert(`菜餚「${meal}」已存在！`);
         return;
       }
-      
       meals.push(meal);
       saveMeals();
       input.value = '';
@@ -334,7 +327,6 @@
       checkInput();
     }
 
-    // 檢查輸入欄位是否有內容，決定按鈕狀態
     function checkInput() {
       const input = document.getElementById('newMeal');
       const addBtn = document.getElementById('addBtn');
@@ -347,24 +339,17 @@
       }
     }
 
-    // 更新主清單畫面（修改為單一欄位顯示）
     function updateMealList(newMeal = null) {
       const list = document.getElementById('mealList');
       list.innerHTML = '';
-
-      // 建立單一欄位容器
       const column = document.createElement('div');
       column.className = 'meal-column';
-
-      // 依字串長度排序（保留原排序邏輯）
       const sortedMeals = meals.slice().sort((a, b) => a.length - b.length);
       sortedMeals.forEach((meal, sortedIndex) => {
-        if (sortedIndex >= 16) return; // 若不需要限制筆數，可移除此行
+        if (sortedIndex >= 16) return;
         const mealItem = document.createElement('div');
         mealItem.className = 'meal-list-item';
         mealItem.setAttribute('data-meal', meal);
-
-        // 判斷該菜餚是否隱藏
         if (hiddenMeals.indexOf(meal) !== -1) {
           mealItem.style.textDecoration = 'line-through';
           mealItem.style.color = '#888';
@@ -372,34 +357,21 @@
           mealItem.style.textDecoration = 'none';
           mealItem.style.color = '';
         }
-
-        // 點擊菜餚項目，顯示操作選單
         mealItem.onclick = function(e) {
           e.stopPropagation();
           currentMealItem = mealItem;
           currentMealName = meal;
           showActionMenu();
         };
-
-        // 新增菜餚時加入 slide-in 動畫
-        if (newMeal && meal === newMeal) {
-          mealItem.classList.add('slide-in');
-        }
-
-        // 將菜餚名稱加入菜餚項目中
+        if (newMeal && meal === newMeal) mealItem.classList.add('slide-in');
         const mealNameSpan = document.createElement('span');
         mealNameSpan.textContent = meal;
         mealItem.appendChild(mealNameSpan);
-
-        // 將菜餚項目加入單一欄位中
         column.appendChild(mealItem);
       });
-
-      // 將整個欄位加入主清單容器中
       list.appendChild(column);
     }
 
-    // 抽選按鈕功能：只從未隱藏的菜餚中抽取
     function pickRandom() {
       const activeMeals = meals.filter(meal => hiddenMeals.indexOf(meal) === -1);
       if (activeMeals.length === 0) {
@@ -411,19 +383,17 @@
       showMealResult(selectedMeal);
     }
 
-    // 使用 modal 顯示抽選結果
     function showMealResult(selectedMeal) {
       document.getElementById('modalMeal').textContent = selectedMeal;
       document.getElementById('mealModal').style.display = 'flex';
     }
 
-    // 關閉 modal 的函式
     function closeModal() {
       document.getElementById('mealModal').style.display = 'none';
     }
 
-    // 顯示操作選單，根據該菜餚是否隱藏決定按鈕文字與功能
     function showActionMenu() {
+      document.getElementById('overlay').style.display = 'block';
       const menu = document.getElementById('actionMenu');
       document.getElementById('actionMenuTitle').textContent = currentMealName;
       const toggleBtn = document.getElementById('toggleHideBtn');
@@ -437,16 +407,14 @@
       menu.style.display = 'block';
     }
 
-    // 隱藏操作選單
     function hideActionMenu() {
+      document.getElementById('overlay').style.display = 'none';
       const menu = document.getElementById('actionMenu');
       menu.style.display = 'none';
       currentMealItem = null;
       currentMealName = null;
     }
 
-    // 按下「隱藏」按鈕：
-    // 將該菜餚劃線、變灰，並記錄為隱藏
     function hideMeal() {
       if (currentMealItem && currentMealName) {
         currentMealItem.style.textDecoration = 'line-through';
@@ -459,8 +427,6 @@
       hideActionMenu();
     }
 
-    // 按下「取消隱藏」按鈕：
-    // 將該菜餚恢復預設樣式，從隱藏清單中移除，並重新更新清單
     function unhideMeal() {
       if (currentMealItem && currentMealName) {
         currentMealItem.style.textDecoration = 'none';
@@ -475,7 +441,6 @@
       hideActionMenu();
     }
 
-    // 按下「刪除」按鈕：從資料中刪除該菜餚，並更新清單
     function deleteMeal() {
       if (currentMealName) {
         const index = meals.indexOf(currentMealName);
@@ -493,7 +458,6 @@
       hideActionMenu();
     }
 
-    // 按下「取消」按鈕：關閉操作選單，不做其他動作
     function cancelAction() {
       hideActionMenu();
     }
