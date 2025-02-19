@@ -105,7 +105,7 @@
       gap: 8px;
       width: 100%;
     }
-    /* 固定菜餚項目高度，方便計算可視行數 */
+    /* 固定菜餚項目高度，並移除行動版點擊後的藍色框框 */
     .meal-list-item {
       display: flex;
       justify-content: space-between;
@@ -116,6 +116,8 @@
       cursor: pointer;
       position: relative;
       height: 40px;
+      outline: none; /* 移除聚焦框 */
+      -webkit-tap-highlight-color: transparent; /* 行動裝置點擊效果移除藍色框 */
     }
     /* 動畫效果 */
     @keyframes slideIn {
