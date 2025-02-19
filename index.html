@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>吃什麼?</title>
   <style>
-    /* 基本樣式 */
+    /* ====== 基本樣式設定 ====== */
     body {
       margin: 0;
       padding: 0;
@@ -15,9 +15,7 @@
       background-color: #f5f5f5;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    /* 主容器設定成彈性容器，隨螢幕自動增減 */
     .container {
-      flex: 1;
       margin: 20px;
       background-color: white;
       border-radius: 10px;
@@ -26,10 +24,13 @@
       flex-direction: column;
       overflow: hidden;
     }
+
     h1, h2 {
+      text-align: center;
       color: #333;
       margin: 20px 0;
     }
+
     .meal-input {
       display: flex;
       gap: 10px;
@@ -75,14 +76,12 @@
       border: none;
       border-radius: 4px;
       color: white;
-      cursor: pointer;
     }
     .random-button:hover {
       background-color: #1976D2;
     }
-    /* 設定 .meal-management 及內部 .meal-list 區塊隨容器高度自動調整 */
+
     .meal-management {
-      flex: 1;
       background-color: #f8f8f8;
       padding: 15px;
       border-radius: 8px;
@@ -90,16 +89,15 @@
       display: flex;
       flex-direction: column;
     }
-    .meal-management h2 {
-      margin-bottom: 10px;
-    }
+    /* 調整菜餚清單區域高度為約7.5筆 */
     .meal-list {
-      flex: 1;
+      height: 500px;
       overflow-y: auto;
       background-color: #fff;
       border-radius: 4px;
       padding: 10px;
       box-sizing: border-box;
+      text-align: center;
     }
     .meal-column {
       display: flex;
@@ -109,7 +107,7 @@
     .meal-list-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center; 
       padding: 8px;
       background-color: white;
       border-radius: 4px;
@@ -117,7 +115,10 @@
       height: 40px;
       outline: none;
       -webkit-tap-highlight-color: transparent;
+      border: 1px solid #ccc; /* 讓菜餚方塊有邊框 */
     }
+
+    /* ====== 動畫效果 ====== */
     @keyframes slideIn {
       from { transform: translateX(-100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
@@ -126,17 +127,29 @@
       from { transform: translateX(0); opacity: 1; }
       to { transform: translateX(100%); opacity: 0; }
     }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
     .slide-in { animation: slideIn 0.5s forwards; }
     .slide-out { animation: slideOut 0.5s forwards; }
+    .fade-in { animation: fadeIn 0.5s forwards; }
+    .fade-out { animation: fadeOut 0.5s forwards; }
+
     .delete-btn {
       background-color: #f44336;
     }
     .delete-btn:hover {
       background-color: #da190b;
     }
-    /* Modal 與操作選單 */
+
+    /* ====== Modal 與 Overlay ====== */
     .modal {
-      display: none;
+      display: none;          
       position: fixed;
       z-index: 2000;
       left: 0;
@@ -168,9 +181,54 @@
       cursor: pointer;
       color: #aaa;
     }
-    .close-btn:hover { color: #000; }
-    .modal h1 { font-size: 24px; color: #333; margin: 0; }
-    .modal .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin: 0; text-align: center; }
+    .close-btn:hover {
+      color: #000;
+    }
+    /* 「抽到菜餚」時的字體 */
+    .modal h1 {
+      font-size: 24px;
+      color: #333;
+      margin: 0;
+    }
+    .modal .meal {
+      font-size: 30px;
+      font-weight: bold;
+      color: #d32f2f;
+      margin: 0;
+      text-align: center;
+    }
+
+    /* ====== Alert 與 Confirm Modal 的文字/按鈕 ====== */
+    .modal-message {
+      font-size: 18px;
+      color: #333;
+      text-align: center;
+      margin: 0;
+      white-space: pre-line;
+    }
+    .modal-button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+    }
+    .modal-button {
+      flex: 1;
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+    }
+    .ok-btn {
+      background-color: #4CAF50;
+    }
+    .cancel-btn {
+      background-color: #9E9E9E;
+    }
+
+    /* ====== 操作選單 (隱藏、刪除) ====== */
     .action-menu {
       position: fixed;
       left: 50%;
@@ -185,7 +243,13 @@
       z-index: 3000;
       min-width: 300px;
     }
-    .action-menu h3 { margin-top: 0; margin-bottom: 10px; font-size: 20px; color: #333; }
+    .action-menu h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 20px;
+      color: #333;
+      text-align: center; 
+    }
     .action-menu .btn-container {
       display: flex;
       justify-content: space-between;
@@ -201,10 +265,25 @@
       cursor: pointer;
       color: white;
     }
-    .action-menu .hide-btn { background-color: #4CAF50; }
-    .action-menu .cancel-btn { background-color: #9E9E9E; }
-    .action-menu .delete-btn { background-color: #f44336; }
-    /* overlay 全頁遮罩 */
+    .action-menu .hide-btn {
+      background-color: #4CAF50;
+    }
+    .action-menu .delete-btn {
+      background-color: #f44336;
+    }
+    .action-menu .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 18px;
+      cursor: pointer;
+      color: #aaa;
+    }
+    .action-menu .close-btn:hover {
+      color: #000;
+    }
+
+    /* overlay 全頁遮罩（操作選單用） */
     #overlay {
       display: none;
       position: fixed;
@@ -229,37 +308,82 @@
     <div class="meal-management">
       <h2>菜餚</h2>
       <div class="meal-list" id="mealList">
-        <!-- JavaScript 產生菜餚清單 -->
+        <!-- 由 JavaScript 動態產生菜餚清單 -->
       </div>
     </div>
   </div>
 
-  <!-- Modal 視窗（抽選結果） -->
+  <!-- ====== (1) 抽到菜餚的 Modal ====== -->
   <div id="mealModal" class="modal">
     <div class="modal-content">
-      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <span class="close-btn" onclick="closeMealModal()">&times;</span>
+      <h1>抽到的菜餚</h1>
       <div class="meal" id="modalMeal"></div>
     </div>
   </div>
 
-  <!-- 操作選單 -->
+  <!-- ====== (2) 一般提示訊息 (alertModal) ====== -->
+  <div id="alertModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeAlertModal()">&times;</span>
+      <div id="alertMessage" class="modal-message"></div>
+      <div class="modal-button-group">
+        <button class="modal-button ok-btn" onclick="closeAlertModal()">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== (3) 確認訊息 (confirmModal) ====== -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeConfirmModal()">&times;</span>
+      <div id="confirmMessage" class="modal-message"></div>
+      <div class="modal-button-group">
+        <button id="confirmOkBtn" class="modal-button delete-btn">確定</button>
+        <button class="modal-button cancel-btn" onclick="closeConfirmModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作選單：移除叉叉按鈕，改用 close-btn -->
   <div id="actionMenu" class="action-menu">
+    <span class="close-btn" onclick="cancelAction()">&times;</span>
     <h3 id="actionMenuTitle"></h3>
     <div class="btn-container">
       <button id="toggleHideBtn" class="hide-btn" onclick="">隱藏</button>
-      <button class="cancel-btn" onclick="cancelAction()">取消</button>
       <button class="delete-btn" onclick="deleteMeal()">刪除</button>
     </div>
   </div>
-  
-  <!-- overlay 全頁遮罩（點擊取消操作選單） -->
+
+  <!-- overlay 全頁遮罩 (點擊即取消操作選單) -->
   <div id="overlay" onclick="cancelAction()"></div>
 
   <script>
-    let meals = ['炒飯', '牛肉麵', '炸雞', '咖哩飯', '滷味便當', '酸菜白肉面', '三寶飯'];
+    /* ===================================
+       全域變數/資料
+    =================================== */
+    let meals = [
+      '炸雞',
+      '滷味',
+      '牛肉麵',
+      '三寶飯',
+      '咖哩飯'
+    ];
     let hiddenMeals = [];
     let currentMealItem = null;
     let currentMealName = null;
+
+    // Modal 物件
+    const mealModal = document.getElementById('mealModal');
+    const alertModal = document.getElementById('alertModal');
+    const confirmModal = document.getElementById('confirmModal');
+
+    // AlertModal 文字
+    const alertMessage = document.getElementById('alertMessage');
+
+    // ConfirmModal 文字 & 按鈕
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmOkBtn = document.getElementById('confirmOkBtn');
 
     window.onload = function() {
       loadMeals();
@@ -267,37 +391,51 @@
       checkInput();
     };
 
+    /* ===================================
+       1. localStorage 載入/儲存
+    =================================== */
     function loadMeals() {
       const storedMeals = localStorage.getItem('meals');
-      if (storedMeals) meals = JSON.parse(storedMeals);
+      if (storedMeals) {
+        meals = JSON.parse(storedMeals);
+      }
       const storedHidden = localStorage.getItem('hiddenMeals');
-      if (storedHidden) hiddenMeals = JSON.parse(storedHidden);
+      if (storedHidden) {
+        hiddenMeals = JSON.parse(storedHidden);
+      }
     }
-
     function saveMeals() {
       localStorage.setItem('meals', JSON.stringify(meals));
       localStorage.setItem('hiddenMeals', JSON.stringify(hiddenMeals));
     }
 
+    /* ===================================
+       2. 新增菜餚
+    =================================== */
     function onAddBtnClick() {
       const input = document.getElementById('newMeal');
       const meal = input.value.trim();
+
       if (!meal) {
-        alert('請先填入新菜餚');
+        openAlertModal('請先填入新菜餚');
         return;
       }
       if (meals.includes(meal)) {
-        alert(`菜餚「${meal}」已存在！`);
+        openAlertModal(`菜餚「${meal}」已存在！`);
         return;
       }
       meals.push(meal);
       saveMeals();
       input.value = '';
       updateMealList(meal);
-      alert(`成功新增「${meal}」！`);
+      // 新增成功提示
+      openAlertModal(`成功新增「${meal}」！`);
       checkInput();
     }
 
+    /* ===================================
+       3. 輸入框檢查，決定按鈕狀態
+    =================================== */
     function checkInput() {
       const input = document.getElementById('newMeal');
       const addBtn = document.getElementById('addBtn');
@@ -310,17 +448,25 @@
       }
     }
 
+    /* ===================================
+       4. 更新菜餚清單
+    =================================== */
     function updateMealList(newMeal = null) {
       const list = document.getElementById('mealList');
       list.innerHTML = '';
+
       const column = document.createElement('div');
       column.className = 'meal-column';
+
+      // 依字串長度排序
       const sortedMeals = meals.slice().sort((a, b) => a.length - b.length);
       sortedMeals.forEach((meal, sortedIndex) => {
-        if (sortedIndex >= 16) return;
+        if (sortedIndex >= 16) return; // 最多顯示16筆
         const mealItem = document.createElement('div');
         mealItem.className = 'meal-list-item';
         mealItem.setAttribute('data-meal', meal);
+
+        // 判斷是否隱藏
         if (hiddenMeals.indexOf(meal) !== -1) {
           mealItem.style.textDecoration = 'line-through';
           mealItem.style.color = '#888';
@@ -328,13 +474,20 @@
           mealItem.style.textDecoration = 'none';
           mealItem.style.color = '';
         }
+
+        // 點擊菜餚項目 => 顯示操作選單
         mealItem.onclick = function(e) {
           e.stopPropagation();
           currentMealItem = mealItem;
           currentMealName = meal;
           showActionMenu();
         };
-        if (newMeal && meal === newMeal) mealItem.classList.add('slide-in');
+
+        // 新增時加 slide-in 動畫
+        if (newMeal && meal === newMeal) {
+          mealItem.classList.add('slide-in');
+        }
+
         const mealNameSpan = document.createElement('span');
         mealNameSpan.textContent = meal;
         mealItem.appendChild(mealNameSpan);
@@ -343,26 +496,76 @@
       list.appendChild(column);
     }
 
+    /* ===================================
+       5. 抽選
+    =================================== */
     function pickRandom() {
       const activeMeals = meals.filter(meal => hiddenMeals.indexOf(meal) === -1);
       if (activeMeals.length === 0) {
-        alert('目前沒有可抽取的菜餚！');
+        openAlertModal('目前沒有可抽取的菜餚！');
         return;
       }
       const randomIndex = Math.floor(Math.random() * activeMeals.length);
       const selectedMeal = activeMeals[randomIndex];
       showMealResult(selectedMeal);
     }
-
+    // 顯示抽選結果，加入 fadeIn 動畫
     function showMealResult(selectedMeal) {
       document.getElementById('modalMeal').textContent = selectedMeal;
-      document.getElementById('mealModal').style.display = 'flex';
+      mealModal.style.display = 'flex';
+      mealModal.classList.add('fade-in');
+      setTimeout(() => mealModal.classList.remove('fade-in'), 500);
+    }
+    function closeMealModal() {
+      mealModal.classList.add('fade-out');
+      setTimeout(() => {
+        mealModal.classList.remove('fade-out');
+        mealModal.style.display = 'none';
+      }, 500);
     }
 
-    function closeModal() {
-      document.getElementById('mealModal').style.display = 'none';
+    /* ===================================
+       6. 一般提示訊息 (alertModal)
+    =================================== */
+    function openAlertModal(message) {
+      alertMessage.textContent = message;
+      alertModal.style.display = 'flex';
+      alertModal.classList.add('fade-in');
+      setTimeout(() => alertModal.classList.remove('fade-in'), 500);
+    }
+    function closeAlertModal() {
+      alertModal.classList.add('fade-out');
+      setTimeout(() => {
+        alertModal.classList.remove('fade-out');
+        alertModal.style.display = 'none';
+      }, 500);
     }
 
+    /* ===================================
+       7. 確認訊息 (confirmModal)
+          用於刪除前先確認
+    =================================== */
+    function openConfirmModal(message, onConfirm) {
+      confirmMessage.textContent = message;
+      confirmOkBtn.onclick = function() {
+        onConfirm();
+        closeConfirmModal();
+      };
+      confirmModal.style.display = 'flex';
+      confirmModal.classList.add('fade-in');
+      setTimeout(() => confirmModal.classList.remove('fade-in'), 500);
+    }
+    function closeConfirmModal() {
+      confirmModal.classList.add('fade-out');
+      setTimeout(() => {
+        confirmModal.classList.remove('fade-out');
+        confirmModal.style.display = 'none';
+      }, 500);
+    }
+
+    /* ===================================
+       8. 操作選單 (隱藏、刪除)
+    =================================== */
     function showActionMenu() {
       document.getElementById('overlay').style.display = 'block';
       const menu = document.getElementById('actionMenu');
@@ -376,8 +579,10 @@
         toggleBtn.onclick = hideMeal;
       }
       menu.style.display = 'block';
+      // 為操作選單加上淡入效果
+      menu.classList.add('fade-in');
+      setTimeout(() => menu.classList.remove('fade-in'), 500);
     }
-
     function hideActionMenu() {
       document.getElementById('overlay').style.display = 'none';
       const menu = document.getElementById('actionMenu');
@@ -386,6 +591,7 @@
       currentMealName = null;
     }
 
+    // 按下「隱藏」
     function hideMeal() {
       if (currentMealItem && currentMealName) {
         currentMealItem.style.textDecoration = 'line-through';
@@ -398,6 +604,7 @@
       hideActionMenu();
     }
 
+    // 按下「取消隱藏」
     function unhideMeal() {
       if (currentMealItem && currentMealName) {
         currentMealItem.style.textDecoration = 'none';
@@ -412,23 +619,27 @@
       hideActionMenu();
     }
 
+    // 按下「刪除」：先跳出 confirmModal
     function deleteMeal() {
-      if (currentMealName) {
-        const index = meals.indexOf(currentMealName);
-        if (index !== -1) {
-          meals.splice(index, 1);
-          const hiddenIndex = hiddenMeals.indexOf(currentMealName);
-          if (hiddenIndex !== -1) {
-            hiddenMeals.splice(hiddenIndex, 1);
+      openConfirmModal(`是否確定刪除「${currentMealName}」？`, function() {
+        if (currentMealName) {
+          const index = meals.indexOf(currentMealName);
+          if (index !== -1) {
+            meals.splice(index, 1);
+            const hiddenIndex = hiddenMeals.indexOf(currentMealName);
+            if (hiddenIndex !== -1) {
+              hiddenMeals.splice(hiddenIndex, 1);
+            }
+            saveMeals();
+            updateMealList();
+            openAlertModal(`已刪除「${currentMealName}」`);
           }
-          saveMeals();
-          updateMealList();
-          alert(`已刪除「${currentMealName}」`);
         }
-      }
+      });
       hideActionMenu();
     }
 
+    // 按下「close-btn」(operation menu 的關閉)
     function cancelAction() {
       hideActionMenu();
     }
