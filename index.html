@@ -88,10 +88,16 @@
     }
     /* 設定菜餚清單可捲動，並限定高度只顯示約10行 */
     .meal-list {
-      max-height: 320px; /* 假設每行約40px，共10行 */
+      max-height: 400px; /* 桌機版最大高度 */
       overflow-y: auto;
       display: flex;
       justify-content: center;
+    }
+    /* 行動版設定：螢幕寬度小於768px時 */
+    @media (max-width: 768px) {
+      .meal-list {
+        max-height: 300px; /* 可依實際需求調整 */
+      }
     }
     .meal-column {
       display: flex;
@@ -99,7 +105,7 @@
       gap: 8px;
       width: 100%;
     }
-    /* 可設定固定高度，確保每筆菜餚約40px（可依需求調整） */
+    /* 固定菜餚項目高度，方便計算可視行數 */
     .meal-list-item {
       display: flex;
       justify-content: space-between;
