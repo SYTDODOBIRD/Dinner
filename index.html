@@ -64,8 +64,8 @@
       background-color: #45a049;
     }
     .disabled-btn {
-      background-color: #aaa !important; 
-      color: #fff !important; 
+      background-color: #aaa !important;
+      color: #fff !important;
     }
     .active-btn {
       background-color: #4CAF50 !important;
@@ -86,9 +86,9 @@
       padding: 15px;
       border-radius: 8px;
     }
-    /* 統一採用行動版樣式：菜餚清單最大高度設定為300px */
+    /* 根據視窗高度自動調整菜餚清單高度 */
     .meal-list {
-      max-height: 300px;
+      max-height: calc(100vh - 300px); /* 此數值可根據其它內容高度調整 */
       overflow-y: auto;
       display: flex;
       justify-content: center;
@@ -99,7 +99,7 @@
       gap: 8px;
       width: 100%;
     }
-    /* 固定菜餚項目高度，並移除行動版點擊後的藍色框 */
+    /* 固定菜餚項目高度，並移除點擊後藍色框 */
     .meal-list-item {
       display: flex;
       justify-content: space-between;
@@ -221,7 +221,7 @@
     .action-menu .delete-btn {
       background-color: #f44336;
     }
-    /* overlay 全頁遮罩：灰色半透明，點擊可觸發取消 */
+    /* overlay 全頁遮罩：灰色半透明，點擊可取消操作選單 */
     #overlay {
       display: none;
       position: fixed;
@@ -248,13 +248,13 @@
       <div class="meal-management">
         <h2>菜餚</h2>
         <div class="meal-list" id="mealList">
-          <!-- JavaScript 產生單一欄位 -->
+          <!-- 菜餚清單由 JavaScript 動態產生 -->
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal 視窗（抽選結果） -->
+  <!-- Modal 視窗 -->
   <div id="mealModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -272,7 +272,7 @@
     </div>
   </div>
   
-  <!-- overlay 全頁遮罩（點擊取消操作選單） -->
+  <!-- overlay 全頁遮罩 -->
   <div id="overlay" onclick="cancelAction()"></div>
 
   <script>
