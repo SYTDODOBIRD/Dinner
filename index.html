@@ -5,41 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>吃什麼?</title>
   <style>
-    /* 版本資訊 */
-    .version {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 14px;
-      color: #555;
-      opacity: 0.8;
-    }
     /* 基本樣式 */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
       background-color: #f5f5f5;
-      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
+    /* 主容器設定成彈性容器，隨螢幕自動增減 */
     .container {
-      position: relative;
-      max-width: 1000px;
-      margin: 0 auto;
+      flex: 1;
+      margin: 20px;
       background-color: white;
-      padding: 20px;
       border-radius: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
     h1, h2 {
       color: #333;
-      margin-bottom: 20px;
+      margin: 20px 0;
     }
     .meal-input {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
       justify-content: center;
+      padding: 0 20px;
     }
     input[type="text"] {
       flex: 1;
@@ -72,48 +67,57 @@
       color: #fff !important;
     }
     .random-button {
-      width: 100%;
-      margin-bottom: 20px;
+      width: 90%;
+      margin: 20px auto;
       padding: 12px;
       font-size: 18px;
       background-color: #2196F3;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
     }
     .random-button:hover {
       background-color: #1976D2;
     }
+    /* 設定 .meal-management 及內部 .meal-list 區塊隨容器高度自動調整 */
     .meal-management {
+      flex: 1;
       background-color: #f8f8f8;
       padding: 15px;
       border-radius: 8px;
-    }
-    /* 根據視窗高度自動調整菜餚清單高度 */
-    .meal-list {
-      max-height: calc(100vh - 300px); /* 此數值可根據其它內容高度調整 */
-      overflow-y: auto;
+      margin: 0 20px 20px 20px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+    }
+    .meal-management h2 {
+      margin-bottom: 10px;
+    }
+    .meal-list {
+      flex: 1;
+      overflow-y: auto;
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 10px;
+      box-sizing: border-box;
     }
     .meal-column {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      width: 100%;
     }
-    /* 固定菜餚項目高度，並移除點擊後藍色框 */
     .meal-list-item {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       padding: 8px;
       background-color: white;
       border-radius: 4px;
       cursor: pointer;
-      position: relative;
       height: 40px;
       outline: none;
       -webkit-tap-highlight-color: transparent;
     }
-    /* 動畫效果 */
     @keyframes slideIn {
       from { transform: translateX(-100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
@@ -130,7 +134,7 @@
     .delete-btn:hover {
       background-color: #da190b;
     }
-    /* Modal 視窗樣式 */
+    /* Modal 與操作選單 */
     .modal {
       display: none;
       position: fixed;
@@ -150,11 +154,11 @@
       border-radius: 8px;
       width: 80%;
       max-width: 400px;
-      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 10px;
+      position: relative;
     }
     .close-btn {
       position: absolute;
@@ -164,22 +168,9 @@
       cursor: pointer;
       color: #aaa;
     }
-    .close-btn:hover {
-      color: #000;
-    }
-    .modal h1 {
-      font-size: 24px;
-      color: #333;
-      margin: 0;
-    }
-    .modal .meal {
-      font-size: 30px;
-      font-weight: bold;
-      color: #d32f2f;
-      margin: 0;
-      text-align: center;
-    }
-    /* 操作選單樣式 */
+    .close-btn:hover { color: #000; }
+    .modal h1 { font-size: 24px; color: #333; margin: 0; }
+    .modal .meal { font-size: 30px; font-weight: bold; color: #d32f2f; margin: 0; text-align: center; }
     .action-menu {
       position: fixed;
       left: 50%;
@@ -194,12 +185,7 @@
       z-index: 3000;
       min-width: 300px;
     }
-    .action-menu h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 20px;
-      color: #333;
-    }
+    .action-menu h3 { margin-top: 0; margin-bottom: 10px; font-size: 20px; color: #333; }
     .action-menu .btn-container {
       display: flex;
       justify-content: space-between;
@@ -211,17 +197,14 @@
       padding: 8px;
       font-size: 16px;
       border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      color: white;
     }
-    .action-menu .hide-btn {
-      background-color: #4CAF50;
-    }
-    .action-menu .cancel-btn {
-      background-color: #9E9E9E;
-    }
-    .action-menu .delete-btn {
-      background-color: #f44336;
-    }
-    /* overlay 全頁遮罩：灰色半透明，點擊可取消操作選單 */
+    .action-menu .hide-btn { background-color: #4CAF50; }
+    .action-menu .cancel-btn { background-color: #9E9E9E; }
+    .action-menu .delete-btn { background-color: #f44336; }
+    /* overlay 全頁遮罩 */
     #overlay {
       display: none;
       position: fixed;
@@ -237,24 +220,21 @@
 </head>
 <body>
   <div class="container" id="appContainer">
-    <div class="version">Version 1.0</div>
-    <div class="main-area" id="mainArea">
-      <h1>吃什麼?</h1>
-      <div class="meal-input">
-        <input type="text" id="newMeal" placeholder="輸入新菜餚" oninput="checkInput()">
-        <button id="addBtn" onclick="onAddBtnClick()">新增</button>
-      </div>
-      <button class="random-button" onclick="pickRandom()">抽!</button>
-      <div class="meal-management">
-        <h2>菜餚</h2>
-        <div class="meal-list" id="mealList">
-          <!-- 菜餚清單由 JavaScript 動態產生 -->
-        </div>
+    <h1>吃什麼?</h1>
+    <div class="meal-input">
+      <input type="text" id="newMeal" placeholder="輸入新菜餚" oninput="checkInput()">
+      <button id="addBtn" onclick="onAddBtnClick()">新增</button>
+    </div>
+    <button class="random-button" onclick="pickRandom()">抽!</button>
+    <div class="meal-management">
+      <h2>菜餚</h2>
+      <div class="meal-list" id="mealList">
+        <!-- JavaScript 產生菜餚清單 -->
       </div>
     </div>
   </div>
 
-  <!-- Modal 視窗 -->
+  <!-- Modal 視窗（抽選結果） -->
   <div id="mealModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -272,20 +252,11 @@
     </div>
   </div>
   
-  <!-- overlay 全頁遮罩 -->
+  <!-- overlay 全頁遮罩（點擊取消操作選單） -->
   <div id="overlay" onclick="cancelAction()"></div>
 
   <script>
-    // 主清單預設菜餚
-    let meals = [
-      '炒飯',
-      '牛肉麵',
-      '炸雞',
-      '咖哩飯',
-      '滷味便當',
-      '酸菜白肉面',
-      '三寶飯'
-    ];
+    let meals = ['炒飯', '牛肉麵', '炸雞', '咖哩飯', '滷味便當', '酸菜白肉面', '三寶飯'];
     let hiddenMeals = [];
     let currentMealItem = null;
     let currentMealName = null;
